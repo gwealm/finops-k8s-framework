@@ -1,0 +1,45 @@
+apiVersion: monitoring.coreos.com/v1
+kind: PrometheusRule
+metadata:
+  name: finops-cost-alerts
+  namespace: monitoring
+  labels:
+    release: prometheus
+    prometheus: kube-prometheus
+    role: alert-rules
+spec:
+  groups:
+  - name: kubernetes-cost-monitoring
+    rules:
+    # Alert when cost increases by more than 20% compared to previous day
+    - alert: DailyCostIncrease
+      expr: sum(increase(container_cpu_usage_seconds_total[1d])) by (namespace) > sum(increase(container_cpu_usage_seconds_total[1d] offset 1d)) by (namespace) * 1.2
+      for: 5m
+      labels:
+        severity: warning
+        team: finops
+      annotations:
+        summary: "Namespace {{ $labels.namespace }} cost increased by >20%"
+        description: "The compute cost for namespace {{ $labels.namespace }} has increased by more than 20% compared to the previous day."
+    
+    # Alert when node utilization is low
+    - alert: NodeUnderutilized
+      expr: (sum by (node) (kube_node_status_capacity{resource="cpu"}) - sum by (node) (rate(container_cpu_usage_seconds_total[1d]))) / sum by (node) (kube_node_status_capacity{resource="cpu"}) > 0.7
+      for: 24h
+      labels:
+        severity: warning
+        team: finops
+      annotations:
+        summary: "Node {{ $labels.node }} is underutilized"
+        description: "Node {{ $labels.node }} has been utilizing less than 30% of its CPU capacity for more than 24 hours."
+    
+    # Alert when memory allocation efficiency is low
+    - alert: MemoryOverProvisioned
+      expr: sum by (namespace) (kube_pod_container_resource_requests{resource="memory"}) / sum by (namespace) (container_memory_working_set_bytes) > 2
+      for: 24h
+      labels:
+        severity: warning
+        team: finops
+      annotations:
+        summary: "Memory overprovisioned in namespace {{ $labels.namespace }}"
+        description: "Memory requests in namespace {{ $labels.namespace }} are more than 2x actual usage for 24h. Consider rightsizing."
