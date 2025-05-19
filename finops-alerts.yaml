@@ -1,45 +1,224 @@
 apiVersion: monitoring.coreos.com/v1
 kind: PrometheusRule
 metadata:
-  name: finops-cost-alerts
+  name: finops-alerts
   namespace: monitoring
   labels:
-    release: prometheus
     prometheus: kube-prometheus
     role: alert-rules
 spec:
   groups:
-  - name: kubernetes-cost-monitoring
+  - name: finops-resource-waste
     rules:
-    # Alert when cost increases by more than 20% compared to previous day
-    - alert: DailyCostIncrease
-      expr: sum(increase(container_cpu_usage_seconds_total[1d])) by (namespace) > sum(increase(container_cpu_usage_seconds_total[1d] offset 1d)) by (namespace) * 1.2
-      for: 5m
-      labels:
-        severity: warning
-        team: finops
-      annotations:
-        summary: "Namespace {{ $labels.namespace }} cost increased by >20%"
-        description: "The compute cost for namespace {{ $labels.namespace }} has increased by more than 20% compared to the previous day."
-    
-    # Alert when node utilization is low
-    - alert: NodeUnderutilized
-      expr: (sum by (node) (kube_node_status_capacity{resource="cpu"}) - sum by (node) (rate(container_cpu_usage_seconds_total[1d]))) / sum by (node) (kube_node_status_capacity{resource="cpu"}) > 0.7
+    - alert: HighCPUWaste
+      expr: |
+        (
+          sum(kube_pod_container_resource_requests{resource="cpu"}) by (namespace) - 
+          sum(rate(container_cpu_usage_seconds_total[5m])) by (namespace)
+        ) / sum(kube_pod_container_resource_requests{resource="cpu"}) by (namespace) * 100 > 70
       for: 24h
       labels:
         severity: warning
-        team: finops
+        category: finops
       annotations:
-        summary: "Node {{ $labels.node }} is underutilized"
-        description: "Node {{ $labels.node }} has been utilizing less than 30% of its CPU capacity for more than 24 hours."
-    
-    # Alert when memory allocation efficiency is low
+        summary: "High CPU waste in namespace {{ $labels.namespace }}"
+        description: "The CPU resources in namespace {{ $labels.namespace }} are {{ $value | printf \"%.2f\" }}% wasted over the last 24 hours (requested but not used)."
+        runbook_url: "https://your-wiki/resource-waste-remediation"
+
+    - alert: HighMemoryWaste
+      expr: finops_resource_waste{resource_type="memory"} > 70
+      for: 24h
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "High memory waste in namespace {{ $labels.exported_namespace }}"
+        description: "The memory waste in namespace {{ $labels.exported_namespace }} is {{ $value | printf \"%.2f\" }}%, which is above the threshold of 70% for the last 24 hours."
+        runbook_url: "https://your-wiki/resource-waste-remediation"
+
+  - name: finops-cost-efficiency
+    rules:
+    - alert: LowCostEfficiency
+      expr: avg(finops_efficiency_score{}) by (exported_namespace) < 50
+      for: 24h
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "Low cost efficiency in namespace {{ $labels.exported_namespace }}"
+        description: "The cost efficiency score for namespace {{ $labels.exported_namespace }} is {{ $value | printf \"%.2f\" }}%, which is below the threshold of 50% for the last 24 hours."
+        runbook_url: "https://your-wiki/cost-efficiency-remediation"
+
+    - alert: CriticalLowCostEfficiency
+      expr: avg(finops_efficiency_score{}) by (exported_namespace) < 30
+      for: 24h
+      labels:
+        severity: critical
+        category: finops
+      annotations:
+        summary: "Critical low cost efficiency in namespace {{ $labels.exported_namespace }}"
+        description: "The cost efficiency score for namespace {{ $labels.exported_namespace }} is {{ $value | printf \"%.2f\" }}%, which is below the critical threshold of 30% for the last 24 hours."
+        runbook_url: "https://your-wiki/cost-efficiency-remediation"
+
+  - name: finops-cost-anomalies
+    rules:
+    - alert: CostAnomaly
+      expr: avg(finops_anomaly_score{}) by (exported_namespace) > 75
+      for: 2h
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "Cost anomaly detected in namespace {{ $labels.exported_namespace }}"
+        description: "A cost anomaly with score {{ $value | printf \"%.2f\" }}/100 has been detected in namespace {{ $labels.exported_namespace }}. This may indicate unexpected cost increase."
+        runbook_url: "https://your-wiki/cost-anomaly-investigation"
+
+    - alert: SevereCostAnomaly
+      expr: avg(finops_anomaly_score{}) by (exported_namespace) > 90
+      for: 1h
+      labels:
+        severity: critical
+        category: finops
+      annotations:
+        summary: "Severe cost anomaly detected in namespace {{ $labels.exported_namespace }}"
+        description: "A severe cost anomaly with score {{ $value | printf \"%.2f\" }}/100 has been detected in namespace {{ $labels.exported_namespace }}. Immediate investigation is recommended."
+        runbook_url: "https://your-wiki/cost-anomaly-investigation"
+
+  - name: finops-cost-forecasts
+    rules:
+    - alert: HighCostForecast
+      expr: avg(finops_cost_forecast{}) by (exported_namespace) > 1000
+      for: 24h
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "High cost forecast for namespace {{ $labels.exported_namespace }}"
+        description: "The 30-day cost forecast for namespace {{ $labels.exported_namespace }} is ${{ $value | printf \"%.2f\" }}, which is above the threshold of $1000."
+        runbook_url: "https://your-wiki/cost-management"
+
+    - alert: CostForecastIncrease
+      expr: avg(finops_cost_forecast{}) by (exported_namespace) / avg_over_time(finops_cost_forecast{}[7d] offset 7d) > 1.3
+      for: 24h
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "Cost forecast increased by >30% for namespace {{ $labels.exported_namespace }}"
+        description: "The 30-day cost forecast for namespace {{ $labels.exported_namespace }} has increased by more than 30% compared to the previous week."
+        runbook_url: "https://your-wiki/cost-management"
+
+  - name: finops-optimization-opportunities
+    rules:
+    - alert: HighSavingsOpportunity
+      expr: sum(finops_optimization_savings{}) by (exported_namespace) > 100
+      for: 7d
+      labels:
+        severity: info
+        category: finops
+      annotations:
+        summary: "High potential savings identified for namespace {{ $labels.exported_namespace }}"
+        description: "There is a potential for ${{ $value | printf \"%.2f\" }} monthly savings in namespace {{ $labels.exported_namespace }}. Review the recommendations in the FinOps dashboard."
+        runbook_url: "https://your-wiki/cost-optimization-recommendations"
+
+    - alert: PersistentOptimizationRecommendations
+      expr: count(finops_optimization_savings{} > 0) by (recommendation_type) > 5
+      for: 14d
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "Multiple {{ $labels.recommendation_type }} recommendations"
+        description: "There are {{ $value }} '{{ $labels.recommendation_type }}' recommendations that have been pending for over 14 days."
+        runbook_url: "https://your-wiki/cost-optimization-recommendations"
+
+  - name: finops-resource-utilization
+    rules:
+    - alert: ClusterUnderutilized
+      expr: sum(rate(container_cpu_usage_seconds_total[1d])) / sum(kube_node_status_capacity{resource="cpu"}) < 0.3
+      for: 7d
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "Cluster underutilized"
+        description: "Cluster CPU utilization has been below 30% for 7 days. Consider rightsizing the cluster."
+        runbook_url: "https://your-wiki/cluster-rightsizing"
+
+    - alert: NamespaceOverprovisioned
+      expr: |
+        sum(kube_pod_container_resource_requests{resource="cpu"}) by (namespace) / 
+        sum(rate(container_cpu_usage_seconds_total[1d])) by (namespace) > 5
+      for: 7d
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "Namespace {{ $labels.namespace }} is overprovisioned"
+        description: "CPU requests in namespace {{ $labels.namespace }} are more than 5x actual usage for 7 days. Consider rightsizing."
+        runbook_url: "https://your-wiki/namespace-rightsizing"
+
     - alert: MemoryOverProvisioned
-      expr: sum by (namespace) (kube_pod_container_resource_requests{resource="memory"}) / sum by (namespace) (container_memory_working_set_bytes) > 2
-      for: 24h
+      expr: sum(kube_pod_container_resource_requests{resource="memory"}) by (namespace) / sum(container_memory_working_set_bytes) by (namespace) > 3
+      for: 7d
       labels:
         severity: warning
-        team: finops
+        category: finops
       annotations:
         summary: "Memory overprovisioned in namespace {{ $labels.namespace }}"
-        description: "Memory requests in namespace {{ $labels.namespace }} are more than 2x actual usage for 24h. Consider rightsizing."
+        description: "Memory requests in namespace {{ $labels.namespace }} are more than 3x actual usage for 7 days. Consider rightsizing."
+        runbook_url: "https://your-wiki/namespace-rightsizing"
+
+  - name: finops-cost-increase
+    rules:
+    - alert: DailyCostIncrease
+      expr: |
+        sum(rate(container_cpu_usage_seconds_total[1d])) by (namespace) > 
+        sum(rate(container_cpu_usage_seconds_total[1d] offset 1d)) by (namespace) * 1.5
+      for: 2h
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "Namespace {{ $labels.namespace }} cost increased by >50%"
+        description: "The compute cost for namespace {{ $labels.namespace }} has increased by more than 50% compared to the previous day."
+        runbook_url: "https://your-wiki/cost-increase-investigation"
+
+    - alert: WeeklyCostIncrease
+      expr: |
+        sum(rate(container_cpu_usage_seconds_total[7d])) by (namespace) > 
+        sum(rate(container_cpu_usage_seconds_total[7d] offset 7d)) by (namespace) * 1.3
+      for: 1d
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "Namespace {{ $labels.namespace }} weekly cost increased by >30%"
+        description: "The compute cost for namespace {{ $labels.namespace }} has increased by more than 30% compared to the previous week."
+        runbook_url: "https://your-wiki/cost-increase-investigation"
+
+  - name: finops-idle-resources
+    rules:
+    - alert: IdlePersistentVolumes
+      expr: kube_persistentvolume_status_phase{phase="Available"} == 1
+      for: 7d
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "Idle persistent volume {{ $labels.persistentvolume }}"
+        description: "Persistent volume {{ $labels.persistentvolume }} has been available (unused) for 7 days."
+        runbook_url: "https://your-wiki/idle-resource-management"
+
+    - alert: IdleServices
+      expr: |
+        sum(kube_service_spec_type{type="LoadBalancer"}) by (namespace, service) 
+        unless sum(kube_pod_info) by (namespace, service)
+      for: 7d
+      labels:
+        severity: warning
+        category: finops
+      annotations:
+        summary: "Idle LoadBalancer service in namespace {{ $labels.namespace }}"
+        description: "LoadBalancer service {{ $labels.service }} in namespace {{ $labels.namespace }} appears to have no backend pods for 7 days."
+        runbook_url: "https://your-wiki/idle-resource-management"

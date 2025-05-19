@@ -88,7 +88,7 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
+        "w": 5,
         "x": 0,
         "y": 1
       },
@@ -163,8 +163,8 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 4,
+        "w": 5,
+        "x": 5,
         "y": 1
       },
       "id": 25,
@@ -195,6 +195,104 @@
       ],
       "title": "Cost Anomaly Score",
       "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "green",
+                "value": 30
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 7,
+        "x": 10,
+        "y": 1
+      },
+      "id": 21,
+      "options": {
+        "displayMode": "gradient",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "avg(\n  sum(kube_pod_container_resource_requests{resource=\"cpu\", namespace=\"$namespace\"}) - \n  sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\"}[5m]))\n) / sum(kube_pod_container_resource_requests{resource=\"cpu\", namespace=\"$namespace\"}) * 100",
+          "legendFormat": "CPU",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "avg(finops_resource_waste{exported_namespace=\"$namespace\", resource_type=\"memory\", job=\"finops-api\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Memory",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Resource Waste",
+      "type": "bargauge"
     },
     {
       "datasource": {
@@ -259,8 +357,8 @@
       "gridPos": {
         "h": 6,
         "w": 8,
-        "x": 8,
-        "y": 1
+        "x": 0,
+        "y": 7
       },
       "id": 23,
       "options": {
@@ -310,11 +408,42 @@
       "fieldConfig": {
         "defaults": {
           "color": {
-            "mode": "thresholds"
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
           },
           "mappings": [],
-          "max": 100,
-          "min": 0,
           "thresholds": {
             "mode": "absolute",
             "steps": [
@@ -322,64 +451,66 @@
                 "color": "green"
               },
               {
-                "color": "green",
-                "value": 30
-              },
-              {
-                "color": "yellow",
-                "value": 50
-              },
-              {
-                "color": "orange",
-                "value": 70
-              },
-              {
                 "color": "red",
-                "value": 100
+                "value": 80
               }
             ]
           },
-          "unit": "percent"
+          "unit": "gbytes"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "Mem Usage"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 6,
-        "w": 4,
-        "x": 0,
+        "w": 9,
+        "x": 8,
         "y": 7
       },
-      "id": 21,
+      "id": 27,
       "options": {
-        "displayMode": "gradient",
         "legend": {
           "calcs": [],
           "displayMode": "list",
           "placement": "bottom",
-          "showLegend": false
+          "showLegend": true
         },
-        "maxVizHeight": 300,
-        "minVizHeight": 16,
-        "minVizWidth": 8,
-        "namePlacement": "auto",
-        "orientation": "auto",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showUnfilled": true,
-        "sizing": "auto",
-        "valueMode": "color"
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
       },
       "pluginVersion": "12.0.0",
       "targets": [
         {
           "editorMode": "code",
-          "expr": "avg(finops_resource_waste{exported_namespace=\"$namespace\", resource_type=\"cpu\", job=\"finops-api\"})",
-          "legendFormat": "CPU",
+          "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\"}) / (1024 * 1024 * 1024)",
+          "legendFormat": "Mem Usage",
           "range": true,
           "refId": "A"
         },
@@ -389,16 +520,29 @@
             "uid": "prometheus"
           },
           "editorMode": "code",
-          "expr": "avg(finops_resource_waste{exported_namespace=\"$namespace\", resource_type=\"memory\", job=\"finops-api\"})",
+          "expr": "sum(kube_pod_container_resource_requests{namespace=\"$namespace\", resource=\"memory\"}) / (1024 * 1024 * 1024)",
           "hide": false,
           "instant": false,
-          "legendFormat": "Memory",
+          "legendFormat": "Mem Requests",
           "range": true,
           "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(kube_pod_container_resource_limits{namespace=\"$namespace\", resource=\"memory\"}) / (1024 * 1024 * 1024)",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Mem Limits",
+          "range": true,
+          "refId": "C"
         }
       ],
-      "title": "Resource Waste",
-      "type": "bargauge"
+      "title": "Memory Usage vs Requests vs Limits",
+      "type": "timeseries"
     },
     {
       "datasource": {
@@ -466,7 +610,7 @@
               "options": {
                 "mode": "exclude",
                 "names": [
-                  "CPU Requests"
+                  "CPU Efficiency"
                 ],
                 "prefix": "All except:",
                 "readOnly": true
@@ -487,9 +631,9 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 6,
-        "x": 4,
-        "y": 7
+        "w": 8,
+        "x": 0,
+        "y": 13
       },
       "id": 26,
       "options": {
@@ -600,7 +744,7 @@
               }
             ]
           },
-          "unit": "gbytes"
+          "unit": "percent"
         },
         "overrides": [
           {
@@ -610,7 +754,7 @@
               "options": {
                 "mode": "exclude",
                 "names": [
-                  "Mem Usage"
+                  "CPU Efficiency"
                 ],
                 "prefix": "All except:",
                 "readOnly": true
@@ -631,11 +775,11 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 6,
-        "x": 10,
-        "y": 7
+        "w": 9,
+        "x": 8,
+        "y": 13
       },
-      "id": 27,
+      "id": 29,
       "options": {
         "legend": {
           "calcs": [],
@@ -653,39 +797,13 @@
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\"}) / (1024 * 1024 * 1024)",
-          "legendFormat": "Mem Usage",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\"}[5m])) / \nsum(kube_pod_container_resource_requests{namespace=\"$namespace\", resource=\"cpu\"}) * 100",
+          "legendFormat": "CPU Efficiency",
           "range": true,
           "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "expr": "sum(kube_pod_container_resource_requests{namespace=\"$namespace\", resource=\"memory\"}) / (1024 * 1024 * 1024)",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "Mem Requests",
-          "range": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "prometheus"
-          },
-          "editorMode": "code",
-          "expr": "sum(kube_pod_container_resource_limits{namespace=\"$namespace\", resource=\"memory\"}) / (1024 * 1024 * 1024)",
-          "hide": false,
-          "instant": false,
-          "legendFormat": "Mem Limits",
-          "range": true,
-          "refId": "C"
         }
       ],
-      "title": "Memory Usage vs Requests vs Limits",
+      "title": "CPU Efficiency",
       "type": "timeseries"
     },
     {
@@ -763,9 +881,9 @@
       },
       "gridPos": {
         "h": 6,
-        "w": 16,
+        "w": 17,
         "x": 0,
-        "y": 13
+        "y": 19
       },
       "id": 24,
       "options": {
@@ -809,7 +927,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 19
+        "y": 25
       },
       "id": 1,
       "panels": [],
@@ -845,7 +963,7 @@
         "h": 3,
         "w": 4,
         "x": 0,
-        "y": 20
+        "y": 26
       },
       "id": 2,
       "options": {
@@ -908,7 +1026,7 @@
         "h": 3,
         "w": 4,
         "x": 4,
-        "y": 20
+        "y": 26
       },
       "id": 3,
       "options": {
@@ -971,7 +1089,7 @@
         "h": 3,
         "w": 4,
         "x": 8,
-        "y": 20
+        "y": 26
       },
       "id": 4,
       "options": {
@@ -1034,7 +1152,7 @@
         "h": 3,
         "w": 4,
         "x": 12,
-        "y": 20
+        "y": 26
       },
       "id": 5,
       "options": {
@@ -1097,7 +1215,7 @@
         "h": 3,
         "w": 4,
         "x": 16,
-        "y": 20
+        "y": 26
       },
       "id": 6,
       "options": {
@@ -1160,7 +1278,7 @@
         "h": 3,
         "w": 4,
         "x": 20,
-        "y": 20
+        "y": 26
       },
       "id": 7,
       "options": {
@@ -1262,7 +1380,7 @@
         "h": 5,
         "w": 9,
         "x": 0,
-        "y": 23
+        "y": 29
       },
       "id": 8,
       "options": {
@@ -1358,7 +1476,7 @@
         "h": 5,
         "w": 9,
         "x": 9,
-        "y": 23
+        "y": 29
       },
       "id": 9,
       "options": {
@@ -1416,7 +1534,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 23
+        "y": 29
       },
       "id": 10,
       "options": {
@@ -1487,7 +1605,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 28
+        "y": 34
       },
       "id": 11,
       "panels": [
@@ -1744,7 +1862,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 29
+        "y": 35
       },
       "id": 14,
       "panels": [
@@ -2001,7 +2119,7 @@
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 30
+        "y": 36
       },
       "id": 17,
       "panels": [
