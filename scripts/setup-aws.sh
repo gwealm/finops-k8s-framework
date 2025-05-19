@@ -61,7 +61,11 @@ helm install opencost opencost/opencost \
   --set opencost.prometheus.internal.port=9090 \
   --set opencost.prometheus.internal.serviceName="prometheus-kube-prometheus-prometheus" \
   --set opencost.metrics.serviceMonitor.enabled="true" \
-  --set opencost.metrics.serviceMonitor.additionalLabels.release=prometheus
+  --set opencost.metrics.serviceMonitor.additionalLabels.release=prometheus \
+  --set opencost.exporter.cloudProviderApiKey.enabled=true \
+  --set opencost.exporter.cloudProvider="aws" \
+  --set opencost.exporter.aws.region="$AWS_REGION"
+
 
 
 echo "Waiting for OpenCost to start..."

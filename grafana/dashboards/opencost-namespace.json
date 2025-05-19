@@ -40,6 +40,777 @@
         "x": 0,
         "y": 0
       },
+      "id": 28,
+      "panels": [],
+      "title": "Finops Middleware",
+      "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 30
+              },
+              {
+                "color": "orange",
+                "value": 50
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "green",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 1
+      },
+      "id": 20,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "avg(finops_efficiency_score{exported_namespace=\"$namespace\", job=\"finops-api\"})",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost Efficiency Score",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "green",
+                "value": 50
+              },
+              {
+                "color": "yellow",
+                "value": 70
+              },
+              {
+                "color": "orange",
+                "value": 85
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          }
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 4,
+        "y": 1
+      },
+      "id": 25,
+      "options": {
+        "minVizHeight": 75,
+        "minVizWidth": 75,
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showThresholdLabels": false,
+        "showThresholdMarkers": true,
+        "sizing": "auto"
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "finops_anomaly_score{exported_namespace=\"$namespace\", job=~\"finops-api\"}",
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Cost Anomaly Score",
+      "type": "gauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 10,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 2,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 8,
+        "x": 8,
+        "y": 1
+      },
+      "id": 23,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(\n  (\n    sum(container_memory_allocation_bytes{namespace=~\"$namespace\"})\n    by (namespace, instance)\n    * on(instance) group_left()\n    (avg(node_ram_hourly_cost) by (instance) / (1024 * 1024 * 1024) * 730)\n  )\n  +\n  (\n    sum(container_cpu_allocation{namespace=~\"$namespace\"})\n    by (namespace, instance)\n    * on(instance) group_left()\n    (avg(node_cpu_hourly_cost) by (instance) * 730)\n  )\n) by (namespace)",
+          "legendFormat": "Current Monthly Cost",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "finops_cost_forecast{exported_namespace=\"$namespace\", job=~\"finops-api\"}",
+          "hide": false,
+          "instant": false,
+          "legendFormat": " Forecasted Monthly Cost",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Current vs Forecasted Monthly Cost",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "thresholds"
+          },
+          "mappings": [],
+          "max": 100,
+          "min": 0,
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "green",
+                "value": 30
+              },
+              {
+                "color": "yellow",
+                "value": 50
+              },
+              {
+                "color": "orange",
+                "value": 70
+              },
+              {
+                "color": "red",
+                "value": 100
+              }
+            ]
+          },
+          "unit": "percent"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 4,
+        "x": 0,
+        "y": 7
+      },
+      "id": 21,
+      "options": {
+        "displayMode": "gradient",
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": false
+        },
+        "maxVizHeight": 300,
+        "minVizHeight": 16,
+        "minVizWidth": 8,
+        "namePlacement": "auto",
+        "orientation": "auto",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showUnfilled": true,
+        "sizing": "auto",
+        "valueMode": "color"
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "avg(finops_resource_waste{exported_namespace=\"$namespace\", resource_type=\"cpu\", job=\"finops-api\"})",
+          "legendFormat": "CPU",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "avg(finops_resource_waste{exported_namespace=\"$namespace\", resource_type=\"memory\", job=\"finops-api\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Memory",
+          "range": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Resource Waste",
+      "type": "bargauge"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "Cores"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "CPU Requests"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 4,
+        "y": 7
+      },
+      "id": 26,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(rate(container_cpu_usage_seconds_total{namespace=\"$namespace\"}[5m]))",
+          "legendFormat": "CPU Usage",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(kube_pod_container_resource_requests{namespace=\"$namespace\", resource=\"cpu\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "CPU Requests",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(kube_pod_container_resource_limits{namespace=\"$namespace\", resource=\"cpu\"})",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "CPU Limits",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "CPU Usage vs Requests vs Limits",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "barAlignment": 0,
+            "barWidthFactor": 0.6,
+            "drawStyle": "line",
+            "fillOpacity": 0,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "insertNulls": false,
+            "lineInterpolation": "linear",
+            "lineWidth": 1,
+            "pointSize": 5,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "showPoints": "auto",
+            "spanNulls": false,
+            "stacking": {
+              "group": "A",
+              "mode": "none"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "gbytes"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "Mem Usage"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 6,
+        "x": 10,
+        "y": 7
+      },
+      "id": 27,
+      "options": {
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        }
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "sum(container_memory_working_set_bytes{namespace=\"$namespace\"}) / (1024 * 1024 * 1024)",
+          "legendFormat": "Mem Usage",
+          "range": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(kube_pod_container_resource_requests{namespace=\"$namespace\", resource=\"memory\"}) / (1024 * 1024 * 1024)",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Mem Requests",
+          "range": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(kube_pod_container_resource_limits{namespace=\"$namespace\", resource=\"memory\"}) / (1024 * 1024 * 1024)",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "Mem Limits",
+          "range": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Memory Usage vs Requests vs Limits",
+      "type": "timeseries"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "color": {
+            "mode": "palette-classic"
+          },
+          "custom": {
+            "axisBorderShow": false,
+            "axisCenteredZero": false,
+            "axisColorMode": "text",
+            "axisLabel": "",
+            "axisPlacement": "auto",
+            "fillOpacity": 80,
+            "gradientMode": "none",
+            "hideFrom": {
+              "legend": false,
+              "tooltip": false,
+              "viz": false
+            },
+            "lineWidth": 1,
+            "scaleDistribution": {
+              "type": "linear"
+            },
+            "thresholdsStyle": {
+              "mode": "off"
+            }
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "cpu_request_rightsizing"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": true
+                }
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 6,
+        "w": 16,
+        "x": 0,
+        "y": 13
+      },
+      "id": 24,
+      "options": {
+        "barRadius": 0,
+        "barWidth": 0.7,
+        "fullHighlight": false,
+        "groupWidth": 0.7,
+        "legend": {
+          "calcs": [],
+          "displayMode": "list",
+          "placement": "bottom",
+          "showLegend": true
+        },
+        "orientation": "auto",
+        "showValue": "auto",
+        "stacking": "none",
+        "tooltip": {
+          "hideZeros": false,
+          "mode": "single",
+          "sort": "none"
+        },
+        "xTickLabelRotation": 0,
+        "xTickLabelSpacing": 0
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "editorMode": "code",
+          "expr": "finops_optimization_savings{exported_namespace=\"$namespace\", job=~\"finops-api\"}",
+          "legendFormat": "{{recommendation_type}}",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Potential Monthly Savings",
+      "type": "barchart"
+    },
+    {
+      "collapsed": false,
+      "gridPos": {
+        "h": 1,
+        "w": 24,
+        "x": 0,
+        "y": 19
+      },
       "id": 1,
       "panels": [],
       "title": " Summary",
@@ -74,7 +845,7 @@
         "h": 3,
         "w": 4,
         "x": 0,
-        "y": 1
+        "y": 20
       },
       "id": 2,
       "options": {
@@ -94,7 +865,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.6.0",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -137,7 +908,7 @@
         "h": 3,
         "w": 4,
         "x": 4,
-        "y": 1
+        "y": 20
       },
       "id": 3,
       "options": {
@@ -157,7 +928,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.6.0",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -200,7 +971,7 @@
         "h": 3,
         "w": 4,
         "x": 8,
-        "y": 1
+        "y": 20
       },
       "id": 4,
       "options": {
@@ -220,7 +991,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.6.0",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -263,7 +1034,7 @@
         "h": 3,
         "w": 4,
         "x": 12,
-        "y": 1
+        "y": 20
       },
       "id": 5,
       "options": {
@@ -283,7 +1054,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.6.0",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -326,7 +1097,7 @@
         "h": 3,
         "w": 4,
         "x": 16,
-        "y": 1
+        "y": 20
       },
       "id": 6,
       "options": {
@@ -346,7 +1117,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.6.0",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -389,7 +1160,7 @@
         "h": 3,
         "w": 4,
         "x": 20,
-        "y": 1
+        "y": 20
       },
       "id": 7,
       "options": {
@@ -409,7 +1180,7 @@
         "textMode": "auto",
         "wideLayout": true
       },
-      "pluginVersion": "11.6.0",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -491,7 +1262,7 @@
         "h": 5,
         "w": 9,
         "x": 0,
-        "y": 4
+        "y": 23
       },
       "id": 8,
       "options": {
@@ -507,7 +1278,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.6.0",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -587,7 +1358,7 @@
         "h": 5,
         "w": 9,
         "x": 9,
-        "y": 4
+        "y": 23
       },
       "id": 9,
       "options": {
@@ -603,7 +1374,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.6.0",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -645,7 +1416,7 @@
         "h": 5,
         "w": 6,
         "x": 18,
-        "y": 4
+        "y": 23
       },
       "id": 10,
       "options": {
@@ -674,7 +1445,7 @@
           "sort": "none"
         }
       },
-      "pluginVersion": "11.6.0",
+      "pluginVersion": "12.0.0",
       "targets": [
         {
           "datasource": {
@@ -711,669 +1482,724 @@
       "type": "piechart"
     },
     {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 9
+        "y": 28
       },
       "id": 11,
-      "panels": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 5
+                  },
+                  {
+                    "color": "red",
+                    "value": 10
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Cost Difference (7d)"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "thresholds"
+                    }
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background"
+                    }
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Cost Difference (30d)"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "thresholds"
+                    }
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background"
+                    }
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 18,
+            "x": 0,
+            "y": 97
+          },
+          "id": 12,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "enablePagination": true,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "Total Cost (Today)"
+              }
+            ]
+          },
+          "pluginVersion": "12.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (pod)\n)\n",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (pod)\n)\n\n/\ntopk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"} offset 7d)\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"} offset 7d) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"} offset 7d)\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"} offset 7d) by (instance) * 730)\n    )\n  ) by (pod)\n)\n\n* 100\n- 100\n",
+              "format": "table",
+              "instant": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (pod)\n)\n\n/\ntopk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"} offset 30d)\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"} offset 30d) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"} offset 30d)\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"} offset 30d) by (instance) * 730)\n    )\n  ) by (pod)\n)\n\n* 100\n- 100\n",
+              "format": "table",
+              "instant": true,
+              "refId": "C"
+            }
+          ],
+          "title": "Pod Monthly Cost",
+          "transformations": [
+            {
+              "id": "merge"
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "job": true
+                },
+                "indexByName": {
+                  "Value #A": 1,
+                  "Value #B": 2,
+                  "Value #C": 3,
+                  "pod": 0
+                },
+                "renameByName": {
+                  "Value #A": "Total Cost (Today)",
+                  "Value #B": "Cost Difference (7d)",
+                  "Value #C": "Cost Difference (30d)",
+                  "pod": "Pod"
+                }
+              }
+            }
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              },
+              "mappings": [],
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 6,
+            "x": 18,
+            "y": 97
+          },
+          "id": 13,
+          "options": {
+            "legend": {
+              "asTable": true,
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortDesc": true,
+              "values": [
+                "value",
+                "percent"
+              ]
+            },
+            "pieType": "pie",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (pod)\n)\n",
+              "instant": true,
+              "legendFormat": "{{ pod }}",
+              "refId": "A"
+            }
+          ],
+          "title": "Cost by Pod",
+          "type": "piechart"
+        }
+      ],
       "title": "Pod Summary",
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "yellow",
-                "value": 5
-              },
-              {
-                "color": "red",
-                "value": 10
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Cost Difference (7d)"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "thresholds"
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-background"
-                }
-              },
-              {
-                "id": "unit",
-                "value": "percent"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Cost Difference (30d)"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "thresholds"
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-background"
-                }
-              },
-              {
-                "id": "unit",
-                "value": "percent"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 18,
-        "x": 0,
-        "y": 10
-      },
-      "id": 12,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "enablePagination": true,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "Total Cost (Today)"
-          }
-        ]
-      },
-      "pluginVersion": "11.6.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (pod)\n)\n",
-          "format": "table",
-          "instant": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (pod)\n)\n\n/\ntopk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"} offset 7d)\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"} offset 7d) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"} offset 7d)\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"} offset 7d) by (instance) * 730)\n    )\n  ) by (pod)\n)\n\n* 100\n- 100\n",
-          "format": "table",
-          "instant": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (pod)\n)\n\n/\ntopk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"} offset 30d)\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"} offset 30d) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"} offset 30d)\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"} offset 30d) by (instance) * 730)\n    )\n  ) by (pod)\n)\n\n* 100\n- 100\n",
-          "format": "table",
-          "instant": true,
-          "refId": "C"
-        }
-      ],
-      "title": "Pod Monthly Cost",
-      "transformations": [
-        {
-          "id": "merge"
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "job": true
-            },
-            "indexByName": {
-              "Value #A": 1,
-              "Value #B": 2,
-              "Value #C": 3,
-              "pod": 0
-            },
-            "renameByName": {
-              "Value #A": "Total Cost (Today)",
-              "Value #B": "Cost Difference (7d)",
-              "Value #C": "Cost Difference (30d)",
-              "pod": "Pod"
-            }
-          }
-        }
-      ],
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": [],
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 6,
-        "x": 18,
-        "y": 10
-      },
-      "id": 13,
-      "options": {
-        "legend": {
-          "asTable": true,
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortDesc": true,
-          "values": [
-            "value",
-            "percent"
-          ]
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.6.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, pod)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (pod)\n)\n",
-          "instant": true,
-          "legendFormat": "{{ pod }}",
-          "refId": "A"
-        }
-      ],
-      "title": "Cost by Pod",
-      "type": "piechart"
-    },
-    {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 20
+        "y": 29
       },
       "id": 14,
-      "panels": [],
+      "panels": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "yellow",
+                    "value": 5
+                  },
+                  {
+                    "color": "red",
+                    "value": 10
+                  }
+                ]
+              },
+              "unit": "currencyUSD"
+            },
+            "overrides": [
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Cost Difference (7d)"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "thresholds"
+                    }
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background"
+                    }
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  }
+                ]
+              },
+              {
+                "matcher": {
+                  "id": "byName",
+                  "options": "Cost Difference (30d)"
+                },
+                "properties": [
+                  {
+                    "id": "color",
+                    "value": {
+                      "mode": "thresholds"
+                    }
+                  },
+                  {
+                    "id": "custom.cellOptions",
+                    "value": {
+                      "type": "color-background"
+                    }
+                  },
+                  {
+                    "id": "unit",
+                    "value": "percent"
+                  }
+                ]
+              }
+            ]
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 18,
+            "x": 0,
+            "y": 98
+          },
+          "id": 15,
+          "options": {
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "enablePagination": true,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
+            },
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "Total Cost (Today)"
+              }
+            ]
+          },
+          "pluginVersion": "12.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (container)\n)\n",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (container)\n)\n\n/\ntopk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"} offset 7d)\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"} offset 7d) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"} offset 7d)\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"} offset 7d) by (instance) * 730)\n    )\n  ) by (container)\n)\n\n* 100\n- 100\n",
+              "format": "table",
+              "instant": true,
+              "refId": "B"
+            },
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (container)\n)\n\n/\ntopk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"} offset 30d)\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"} offset 30d) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"} offset 30d)\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"} offset 30d) by (instance) * 730)\n    )\n  ) by (container)\n)\n\n* 100\n- 100\n",
+              "format": "table",
+              "instant": true,
+              "refId": "C"
+            }
+          ],
+          "title": "Container Monthly Cost",
+          "transformations": [
+            {
+              "id": "merge"
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "job": true
+                },
+                "indexByName": {
+                  "Value #A": 1,
+                  "Value #B": 2,
+                  "Value #C": 3,
+                  "container": 0
+                },
+                "renameByName": {
+                  "Value #A": "Total Cost (Today)",
+                  "Value #B": "Cost Difference (7d)",
+                  "Value #C": "Cost Difference (30d)",
+                  "container": "Container"
+                }
+              }
+            }
+          ],
+          "type": "table"
+        },
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              },
+              "mappings": [],
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 6,
+            "x": 18,
+            "y": 98
+          },
+          "id": 16,
+          "options": {
+            "legend": {
+              "asTable": true,
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortDesc": true,
+              "values": [
+                "value",
+                "percent"
+              ]
+            },
+            "pieType": "pie",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (container)\n)\n",
+              "instant": true,
+              "legendFormat": "{{ container }}",
+              "refId": "A"
+            }
+          ],
+          "title": "Cost by Container",
+          "type": "piechart"
+        }
+      ],
       "title": "Container Summary",
       "type": "row"
     },
     {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "custom": {
-            "align": "auto",
-            "cellOptions": {
-              "type": "auto"
-            },
-            "inspect": false
-          },
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "green"
-              },
-              {
-                "color": "yellow",
-                "value": 5
-              },
-              {
-                "color": "red",
-                "value": 10
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Cost Difference (7d)"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "thresholds"
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-background"
-                }
-              },
-              {
-                "id": "unit",
-                "value": "percent"
-              }
-            ]
-          },
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Cost Difference (30d)"
-            },
-            "properties": [
-              {
-                "id": "color",
-                "value": {
-                  "mode": "thresholds"
-                }
-              },
-              {
-                "id": "custom.cellOptions",
-                "value": {
-                  "type": "color-background"
-                }
-              },
-              {
-                "id": "unit",
-                "value": "percent"
-              }
-            ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 18,
-        "x": 0,
-        "y": 21
-      },
-      "id": 15,
-      "options": {
-        "cellHeight": "sm",
-        "footer": {
-          "countRows": false,
-          "enablePagination": true,
-          "fields": "",
-          "reducer": [
-            "sum"
-          ],
-          "show": false
-        },
-        "showHeader": true,
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "Total Cost (Today)"
-          }
-        ]
-      },
-      "pluginVersion": "11.6.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (container)\n)\n",
-          "format": "table",
-          "instant": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (container)\n)\n\n/\ntopk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"} offset 7d)\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"} offset 7d) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"} offset 7d)\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"} offset 7d) by (instance) * 730)\n    )\n  ) by (container)\n)\n\n* 100\n- 100\n",
-          "format": "table",
-          "instant": true,
-          "refId": "B"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (container)\n)\n\n/\ntopk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"} offset 30d)\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"} offset 30d) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"} offset 30d)\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"} offset 30d) by (instance) * 730)\n    )\n  ) by (container)\n)\n\n* 100\n- 100\n",
-          "format": "table",
-          "instant": true,
-          "refId": "C"
-        }
-      ],
-      "title": "Container Monthly Cost",
-      "transformations": [
-        {
-          "id": "merge"
-        },
-        {
-          "id": "organize",
-          "options": {
-            "excludeByName": {
-              "Time": true,
-              "job": true
-            },
-            "indexByName": {
-              "Value #A": 1,
-              "Value #B": 2,
-              "Value #C": 3,
-              "container": 0
-            },
-            "renameByName": {
-              "Value #A": "Total Cost (Today)",
-              "Value #B": "Cost Difference (7d)",
-              "Value #C": "Cost Difference (30d)",
-              "container": "Container"
-            }
-          }
-        }
-      ],
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "color": {
-            "mode": "palette-classic"
-          },
-          "custom": {
-            "hideFrom": {
-              "legend": false,
-              "tooltip": false,
-              "viz": false
-            }
-          },
-          "mappings": [],
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 6,
-        "x": 18,
-        "y": 21
-      },
-      "id": 16,
-      "options": {
-        "legend": {
-          "asTable": true,
-          "displayMode": "table",
-          "placement": "right",
-          "showLegend": true,
-          "sortDesc": true,
-          "values": [
-            "value",
-            "percent"
-          ]
-        },
-        "pieType": "pie",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "tooltip": {
-          "hideZeros": false,
-          "mode": "single",
-          "sort": "none"
-        }
-      },
-      "pluginVersion": "11.6.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "topk(10,\n  sum(\n    (\n      sum(container_memory_allocation_bytes{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_ram_hourly_cost{job=~\"$job\"}) by (instance) / (1024 * 1024 * 1024) * 730)\n    )\n    +\n    (\n      sum(container_cpu_allocation{namespace=~\"$namespace\", job=~\"$job\"})\n      by (instance, container)\n      * on(instance) group_left()\n      (avg(node_cpu_hourly_cost{job=~\"$job\"}) by (instance) * 730)\n    )\n  ) by (container)\n)\n",
-          "instant": true,
-          "legendFormat": "{{ container }}",
-          "refId": "A"
-        }
-      ],
-      "title": "Cost by Container",
-      "type": "piechart"
-    },
-    {
-      "collapsed": false,
+      "collapsed": true,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 31
+        "y": 30
       },
       "id": 17,
-      "panels": [],
-      "title": "PV Summary",
-      "type": "row"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "decgbytes"
-        },
-        "overrides": [
-          {
-            "matcher": {
-              "id": "byName",
-              "options": "Total Cost"
+      "panels": [
+        {
+          "datasource": {
+            "type": "datasource",
+            "uid": "-- Mixed --"
+          },
+          "fieldConfig": {
+            "defaults": {
+              "custom": {
+                "align": "auto",
+                "cellOptions": {
+                  "type": "auto"
+                },
+                "inspect": false
+              },
+              "mappings": [],
+              "thresholds": {
+                "mode": "absolute",
+                "steps": [
+                  {
+                    "color": "green"
+                  },
+                  {
+                    "color": "red",
+                    "value": 80
+                  }
+                ]
+              },
+              "unit": "decgbytes"
             },
-            "properties": [
+            "overrides": [
               {
-                "id": "unit",
-                "value": "currencyUSD"
+                "matcher": {
+                  "id": "byName",
+                  "options": "Total Cost"
+                },
+                "properties": [
+                  {
+                    "id": "unit",
+                    "value": "currencyUSD"
+                  }
+                ]
               }
             ]
-          }
-        ]
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 18,
-        "x": 0,
-        "y": 32
-      },
-      "id": 18,
-      "options": {
-        "footer": {
-          "enablePagination": true
-        },
-        "sortBy": [
-          {
-            "desc": true,
-            "displayName": "Total Cost"
-          }
-        ]
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
           },
-          "expr": "sum(\n  sum(kube_persistentvolume_capacity_bytes{job=~\"$job\"} / (1024 * 1024 * 1024))\n  by (persistentvolume)\n  * on(persistentvolume) group_left(namespace)\n    label_replace(\n      kube_persistentvolumeclaim_info{job=~\"$job\", namespace=~\"$namespace\"},\n      \"persistentvolume\", \"$1\",\n      \"volumename\", \"(.*)\"\n    )\n  * sum(pv_hourly_cost{job=~\"$job\"}) by (persistentvolume)\n) by (persistentvolume) * 730\n",
-          "format": "table",
-          "instant": true,
-          "refId": "A"
-        },
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
+          "gridPos": {
+            "h": 10,
+            "w": 18,
+            "x": 0,
+            "y": 99
           },
-          "expr": "sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{job=~\"$job\"}\n    / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  *\n  sum(pv_hourly_cost{job=~\"$job\"}) by (persistentvolume)\n  * on(persistentvolume) group_left(namespace) (\n    label_replace(\n      kube_persistentvolumeclaim_info{job=~\"$job\", namespace=~\"$namespace\"},\n      \"persistentvolume\", \"$1\",\n      \"volumename\", \"(.*)\"\n    )\n  )\n) by (persistentvolume) * 730\n",
-          "format": "table",
-          "instant": true,
-          "refId": "B"
-        }
-      ],
-      "title": "Persistent Volumes Monthly Cost",
-      "transformations": [
-        {
-          "id": "merge"
-        },
-        {
-          "id": "organize",
+          "id": 18,
           "options": {
-            "excludeByName": {
-              "Time": true,
-              "job": true,
-              "namespace": true
+            "cellHeight": "sm",
+            "footer": {
+              "countRows": false,
+              "enablePagination": true,
+              "fields": "",
+              "reducer": [
+                "sum"
+              ],
+              "show": false
             },
-            "indexByName": {
-              "Value #A": 1,
-              "Value #B": 2,
-              "persistentvolume": 0
+            "showHeader": true,
+            "sortBy": [
+              {
+                "desc": true,
+                "displayName": "Total Cost"
+              }
+            ]
+          },
+          "pluginVersion": "12.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "expr": "sum(\n  sum(kube_persistentvolume_capacity_bytes{job=~\"$job\"} / (1024 * 1024 * 1024))\n  by (persistentvolume)\n  * on(persistentvolume) group_left(namespace)\n    label_replace(\n      kube_persistentvolumeclaim_info{job=~\"$job\", namespace=~\"$namespace\"},\n      \"persistentvolume\", \"$1\",\n      \"volumename\", \"(.*)\"\n    )\n  * sum(pv_hourly_cost{job=~\"$job\"}) by (persistentvolume)\n) by (persistentvolume) * 730\n",
+              "format": "table",
+              "instant": true,
+              "refId": "A"
             },
-            "renameByName": {
-              "Value #A": "Total GiB",
-              "Value #B": "Total Cost",
-              "persistentvolume": "Persistent Volume"
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "expr": "sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{job=~\"$job\"}\n    / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  *\n  sum(pv_hourly_cost{job=~\"$job\"}) by (persistentvolume)\n  * on(persistentvolume) group_left(namespace) (\n    label_replace(\n      kube_persistentvolumeclaim_info{job=~\"$job\", namespace=~\"$namespace\"},\n      \"persistentvolume\", \"$1\",\n      \"volumename\", \"(.*)\"\n    )\n  )\n) by (persistentvolume) * 730\n",
+              "format": "table",
+              "instant": true,
+              "refId": "B"
             }
-          }
-        }
-      ],
-      "type": "table"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "unit": "currencyUSD"
+          ],
+          "title": "Persistent Volumes Monthly Cost",
+          "transformations": [
+            {
+              "id": "merge"
+            },
+            {
+              "id": "organize",
+              "options": {
+                "excludeByName": {
+                  "Time": true,
+                  "job": true,
+                  "namespace": true
+                },
+                "indexByName": {
+                  "Value #A": 1,
+                  "Value #B": 2,
+                  "persistentvolume": 0
+                },
+                "renameByName": {
+                  "Value #A": "Total GiB",
+                  "Value #B": "Total Cost",
+                  "persistentvolume": "Persistent Volume"
+                }
+              }
+            }
+          ],
+          "type": "table"
         },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 10,
-        "w": 6,
-        "x": 18,
-        "y": 32
-      },
-      "id": 19,
-      "options": {
-        "legend": {
-          "asTable": true,
-          "displayMode": "table",
-          "placement": "right",
-          "sortDesc": true,
-          "values": [
-            "value",
-            "percent"
-          ]
-        },
-        "pieType": "pie"
-      },
-      "pluginVersion": "v11.4.0",
-      "targets": [
         {
           "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
+            "type": "datasource",
+            "uid": "-- Mixed --"
           },
-          "expr": "sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{job=~\"$job\"}\n    / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  *\n  sum(pv_hourly_cost{job=~\"$job\"}) by (persistentvolume)\n  * on(persistentvolume) group_left(namespace) (\n    label_replace(\n      kube_persistentvolumeclaim_info{job=~\"$job\", namespace=~\"$namespace\"},\n      \"persistentvolume\", \"$1\",\n      \"volumename\", \"(.*)\"\n    )\n  )\n) by (persistentvolume) * 730\n",
-          "instant": true,
-          "legendFormat": "{{ persistentvolume }}",
-          "refId": "A"
+          "fieldConfig": {
+            "defaults": {
+              "color": {
+                "mode": "palette-classic"
+              },
+              "custom": {
+                "hideFrom": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              },
+              "mappings": [],
+              "unit": "currencyUSD"
+            },
+            "overrides": []
+          },
+          "gridPos": {
+            "h": 10,
+            "w": 6,
+            "x": 18,
+            "y": 99
+          },
+          "id": 19,
+          "options": {
+            "legend": {
+              "asTable": true,
+              "displayMode": "table",
+              "placement": "right",
+              "showLegend": true,
+              "sortDesc": true,
+              "values": [
+                "value",
+                "percent"
+              ]
+            },
+            "pieType": "pie",
+            "reduceOptions": {
+              "calcs": [
+                "lastNotNull"
+              ],
+              "fields": "",
+              "values": false
+            },
+            "tooltip": {
+              "hideZeros": false,
+              "mode": "single",
+              "sort": "none"
+            }
+          },
+          "pluginVersion": "12.0.0",
+          "targets": [
+            {
+              "datasource": {
+                "type": "prometheus",
+                "uid": "$datasource"
+              },
+              "expr": "sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{job=~\"$job\"}\n    / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  *\n  sum(pv_hourly_cost{job=~\"$job\"}) by (persistentvolume)\n  * on(persistentvolume) group_left(namespace) (\n    label_replace(\n      kube_persistentvolumeclaim_info{job=~\"$job\", namespace=~\"$namespace\"},\n      \"persistentvolume\", \"$1\",\n      \"volumename\", \"(.*)\"\n    )\n  )\n) by (persistentvolume) * 730\n",
+              "instant": true,
+              "legendFormat": "{{ persistentvolume }}",
+              "refId": "A"
+            }
+          ],
+          "title": "Cost by PV",
+          "type": "piechart"
         }
       ],
-      "title": "Cost by PV",
-      "type": "piechart"
+      "title": "PV Summary",
+      "type": "row"
     }
   ],
   "preload": false,

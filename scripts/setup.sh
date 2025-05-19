@@ -2,6 +2,14 @@
 echo "Creating Kind cluster..."
 kind create cluster --name finops-poc --config kubernetes/kind-config.yaml
 
+# Pre-load required images
+echo "Pre-loading images..."
+docker pull ghcr.io/opencost/opencost:1.114.0
+docker pull ghcr.io/opencost/opencost-ui:1.114.0
+kind load docker-image ghcr.io/opencost/opencost:1.114.0 --name finops-poc
+kind load docker-image ghcr.io/opencost/opencost-ui:1.114.0 --name finops-poc
+
+
 # Create namespaces
 kubectl create namespace finops
 kubectl create namespace monitoring
@@ -126,11 +134,29 @@ echo ""
 echo "To access OpenCost API:"
 echo "http://opencost-api"
 echo ""
-echo "To access FinOps API:"
-echo "http://finops-api"
-echo ""
 echo "To access Prometheus:"
 echo "http://prometheus"
 echo ""
 echo "To access Alertmanager:"
 echo "http://alertmanager"
+echo ""
+echo "FinOps Enhanced API deployment complete!"
+echo ""
+echo "Access the API at: http://finops-api:8000"
+echo "API Documentation: http://finops-api:8000/docs"
+echo ""
+echo "Try these endpoints:"
+echo "- /cost-efficiency        - Get cost efficiency scores by namespace"
+echo "- /recommendations        - Get cost optimization recommendations"
+echo "- /cost-anomalies         - Get cost anomaly detection results"
+echo "- /cost-forecasts         - Get cost forecasts by namespace"
+echo "- /all-insights           - Get all insights in one call"
+echo "- /update-metrics         - Force an update of the Prometheus metrics"
+echo ""
+echo "Custom metrics are available in Prometheus under these names:"
+echo "- namespace_cost_efficiency_score"
+echo "- resource_waste_percent"
+echo "- cost_anomaly_score"
+echo "- optimization_potential_savings"
+echo "- cost_forecast_30d"
+echo "- resource_usage_vs_request_ratio"

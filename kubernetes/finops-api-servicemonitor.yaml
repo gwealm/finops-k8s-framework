@@ -1,0 +1,20 @@
+
+
+apiVersion: monitoring.coreos.com/v1
+kind: ServiceMonitor
+metadata:
+  name: finops-api
+  namespace: finops
+  labels:
+    release: prometheus  # This label needs to match your Prometheus instance's selector
+spec:
+  selector:
+    matchLabels:
+      app: finops-api
+  namespaceSelector:
+    matchNames:
+      - finops
+  endpoints:
+  - port: 8000  # The port your metrics are exposed on
+    path: /metrics
+    interval: 15s
