@@ -2,6 +2,7 @@ import logging
 from fastapi import FastAPI, HTTPException
 import uvicorn
 from typing import List
+from datetime import datetime
 from prometheus_fastapi_instrumentator import Instrumentator
 from modules.metrics import finops_http_requests_total
 
@@ -39,7 +40,6 @@ from modules.insights import (
 @app.get("/health")
 def health_check():
     """Health check endpoint"""
-    from datetime import datetime
     return {"status": "healthy", "timestamp": datetime.now().isoformat()}
 
 # API version

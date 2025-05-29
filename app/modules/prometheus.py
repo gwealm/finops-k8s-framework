@@ -3,6 +3,7 @@ import os
 from typing import Dict, Any, List, Optional
 from fastapi import HTTPException
 from prometheus_api_client import PrometheusConnect, PrometheusApiClientException
+from prometheus_client import push_to_gateway
 import requests
 
 logger = logging.getLogger(__name__)
@@ -98,7 +99,6 @@ def push_to_prometheus(job: str = 'finops_api') -> bool:
     Push metrics to Prometheus Pushgateway
     """
     try:
-        from prometheus_client import push_to_gateway
         push_to_gateway(PUSHGATEWAY_URL, job=job, registry=None)
         logger.info(f"Successfully pushed metrics to Prometheus Pushgateway as job '{job}'")
         return True

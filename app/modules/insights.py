@@ -1,6 +1,7 @@
 import os
 import logging
 from typing import List
+import numpy as np
 
 from .models import ResourceData, CostEfficiency, Recommendation, CostAnomaly, CostForecast
 from .prometheus import query_prometheus, extract_metric_value
@@ -320,7 +321,6 @@ def detect_cost_anomalies(namespace: str) -> CostAnomaly:
                 data_points.append(float(value[1]))
             
             if len(data_points) > 24:  # Ensure we have at least a day of hourly data
-                import numpy as np
                 
                 # Calculate mean and standard deviation
                 mean_cost = np.mean(data_points)
@@ -418,7 +418,6 @@ def generate_cost_forecast(namespace: str) -> CostForecast:
                 data_points.append(float(value[1]))
             
             if len(data_points) > 7:  # Ensure we have at least a week of data
-                import numpy as np
                 x = np.arange(len(data_points))
                 y = np.array(data_points)
                 slope, intercept = np.polyfit(x, y, 1)
