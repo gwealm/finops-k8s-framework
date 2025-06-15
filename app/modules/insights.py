@@ -22,7 +22,7 @@ def get_namespace_resources() -> List[ResourceData]:
     
     # Get CPU requests by namespace
     cpu_requests = query_prometheus(
-        "sum(kube_pod_container_resource_requests{resource='cpu'}) by (namespace)"
+        "sum(kube_pod_container_resource_requests{resource='cpu', service='prometheus-kube-state-metrics'}) by (namespace)"
     )
     
     # Get CPU usage by namespace
@@ -37,7 +37,7 @@ def get_namespace_resources() -> List[ResourceData]:
     
     # Get memory requests by namespace
     memory_requests = query_prometheus(
-        "sum(kube_pod_container_resource_requests{resource='memory'}) by (namespace) / 1024 / 1024 / 1024"
+        "sum(kube_pod_container_resource_requests{resource='memory', service='prometheus-kube-state-metrics'}) by (namespace) / 1024 / 1024 / 1024"
     )
     
     # Get memory usage by namespace
