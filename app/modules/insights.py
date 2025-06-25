@@ -7,12 +7,11 @@ from .models import ResourceData, CostEfficiency, Recommendation, CostAnomaly, C
 from .prometheus import query_prometheus, extract_metric_value
 
 from modules.metrics import *
-
 logger = logging.getLogger(__name__)
 
 # Environment variables with default values
-CPU_HOURLY_COST = float(os.getenv("CPU_HOURLY_COST", "0.04"))
-MEMORY_GB_HOURLY_COST = float(os.getenv("MEMORY_GB_HOURLY_COST", "0.01"))
+CPU_HOURLY_COST = float(os.getenv("CPU_HOURLY_COST", "0.0432"))
+MEMORY_GB_HOURLY_COST = float(os.getenv("MEMORY_GB_HOURLY_COST", "0.0108"))
 
 def get_namespace_resources() -> List[ResourceData]:
     """
@@ -22,12 +21,12 @@ def get_namespace_resources() -> List[ResourceData]:
     
     # Get CPU requests by namespace
     cpu_requests = query_prometheus(
-        "sum(kube_pod_container_resource_requests{resource='cpu', service='prometheus-kube-state-metrics'}) by (namespace)"
+        "sum(kube_pod_container_resource_requests{resource='cpu',service='prometheus-kube-state-metrics'}) by (namespace)"
     )
     
     # Get CPU usage by namespace
     cpu_usage = query_prometheus(
-        "sum(rate(container_cpu_usage_seconds_total[1h])) by (namespace)"
+        "sum(rate(container_cpu_usage_seconds_total{container!=''}[1h])) by (namespace)"
     )
     
     # Get CPU limits by namespace
@@ -37,12 +36,12 @@ def get_namespace_resources() -> List[ResourceData]:
     
     # Get memory requests by namespace
     memory_requests = query_prometheus(
-        "sum(kube_pod_container_resource_requests{resource='memory', service='prometheus-kube-state-metrics'}) by (namespace) / 1024 / 1024 / 1024"
+        "sum(kube_pod_container_resource_requests{resource='memory',service='prometheus-kube-state-metrics'}) by (namespace) / 1024 / 1024 / 1024"
     )
     
     # Get memory usage by namespace
     memory_usage = query_prometheus(
-        "sum(container_memory_working_set_bytes) by (namespace) / 1024 / 1024 / 1024"
+        "sum(container_memory_working_set_bytes{container!=''}) by (namespace) / 1024 / 1024 / 1024"
     )
     
     # Get memory limits by namespace
@@ -194,6 +193,7 @@ def generate_recommendations(resource_data: ResourceData) -> List[Recommendation
     recommendations = []
     
     # Check if CPU request can be optimized (if usage is much lower than request)
+
     if resource_data.cpu_request > 0 and resource_data.cpu_usage / resource_data.cpu_request < 0.7:
         # Recommend a value 30% higher than actual usage for safety
         recommended_cpu = max(0.1, resource_data.cpu_usage * 1.3)
@@ -212,7 +212,7 @@ def generate_recommendations(resource_data: ResourceData) -> List[Recommendation
                     recommended_value=recommended_cpu
                 )
             )
-    
+                
     # Check if memory request can be optimized
     if resource_data.memory_request > 0 and resource_data.memory_usage / resource_data.memory_request < 0.7:
         # Recommend a value 30% higher than actual usage for safety
@@ -234,30 +234,57 @@ def generate_recommendations(resource_data: ResourceData) -> List[Recommendation
             )
     
     # Check for missing resource limits
-    if resource_data.cpu_limit == 0 and resource_data.cpu_request > 0:
+    if resource_data.cpu_request > 0:
+        if resource_data.cpu_limit == 0:
+            recommendations.append(
+                Recommendation(
+                    namespace=resource_data.namespace,
+                    recommendation_type="add_cpu_limits",
+                    description="Add CPU limits to prevent resource hogging",
+                    estimated_savings=0.0,  # No direct cost savings but improves cluster stability
+                    current_value="No limit",
+                    recommended_value=str(max(1, resource_data.cpu_request * 2))  # Recommend 2x the request
+                )
+            )
+    else:
+        recommended_cpu = max(0.1, resource_data.cpu_usage * 1.3)
         recommendations.append(
             Recommendation(
                 namespace=resource_data.namespace,
-                recommendation_type="add_cpu_limits",
-                description="Add CPU limits to prevent resource hogging",
+                recommendation_type="add_cpu_limits_and_requests",
+                description="Add CPU limits and Requests to prevent resource hogging",
                 estimated_savings=0.0,  # No direct cost savings but improves cluster stability
                 current_value="No limit",
-                recommended_value=str(max(1, resource_data.cpu_request * 2))  # Recommend 2x the request
+                recommended_value=str(max(1, recommended_cpu )),  # Recommend 1.3x the usage
+                recommended_value2=str(max(1, recommended_cpu * 2))  # Recommend 2x the request
             )
         )
-        
-    if resource_data.memory_limit == 0 and resource_data.memory_request > 0:
+
+    if resource_data.memory_request > 0:  
+        if resource_data.memory_limit == 0:
+            recommendations.append(
+                Recommendation(
+                    namespace=resource_data.namespace,
+                    recommendation_type="add_memory_limits",
+                    description="Add memory limits to prevent resource hogging",
+                    estimated_savings=0.0,  # No direct cost savings but improves cluster stability
+                    current_value="No limit",
+                    recommended_value=str(max(1, resource_data.memory_request * 1.5))  # Recommend 1.5x the request
+                )
+            )
+    else:
+        recommended_memory = max(0.1, resource_data.memory_usage * 1.3)
         recommendations.append(
             Recommendation(
                 namespace=resource_data.namespace,
-                recommendation_type="add_memory_limits",
-                description="Add memory limits to prevent resource hogging",
+                recommendation_type="add_memory_limits_and_requests",
+                description="Add Memory limits and Requests to prevent resource hogging",
                 estimated_savings=0.0,  # No direct cost savings but improves cluster stability
                 current_value="No limit",
-                recommended_value=str(max(1, resource_data.memory_request * 1.5))  # Recommend 1.5x the request
+                recommended_value=str(max(1, recommended_memory )),  # Recommend 1.3x the usage
+                recommended_value2=str(max(1, recommended_memory * 1.5))  # Recommend 2x the request
             )
         )
-        
     for recommendation in recommendations:
         if isinstance(recommendation.estimated_savings, (int, float)):
             finops_optimization_savings.labels(
@@ -275,34 +302,84 @@ def detect_cost_anomalies(namespace: str) -> CostAnomaly:
     # Get hourly cost data for the past 7 days
     hourly_cost_query = f"""
     sum(
-      (
-        sum(container_memory_allocation_bytes{{namespace="{namespace}"}})
-        * on() group_left()
-        (avg(node_ram_hourly_cost) / (1024 * 1024 * 1024) * 1)
-      )
-      +
-      (
-        sum(container_cpu_allocation{{namespace="{namespace}"}})
-        * on() group_left()
-        (avg(node_cpu_hourly_cost) * 1)
-      )
-    )[7d:1h]
+        (
+          sum(container_memory_allocation_bytes{{namespace="{namespace}"}})
+          * on() group_left()
+          (avg(node_ram_hourly_cost) / (1024 * 1024 * 1024) * 1)
+        )
+        +
+        (
+          sum(container_cpu_allocation{{namespace="{namespace}"}})
+          * on() group_left()
+          (avg(node_cpu_hourly_cost) * 1)
+        )
+        +
+        (
+          sum(
+            sum(
+                kube_persistentvolume_capacity_bytes{{job="opencost"}} / (1024 * 1024 * 1024)
+            ) by (persistentvolume)
+            *
+            sum(pv_hourly_cost{{job=~"opencost"}}) by (persistentvolume)
+            * on(persistentvolume) group_left(namespace) (
+              label_replace(
+                kube_persistentvolumeclaim_info{{job="opencost",namespace="{namespace}"}},
+                "persistentvolume", "$1",
+                "volumename", "(.*)"
+              )
+            )
+          )      
+          OR
+          vector(0)
+        )
+        +
+        (
+          sum(kubecost_load_balancer_cost{{namespace="{namespace}"}})
+          OR
+          vector(0)
+        )
+      )[7d:1h]
     """
     
     # Get current cost
     current_cost_query = f"""
-    sum(
-      (
-        sum(container_memory_allocation_bytes{{namespace="{namespace}"}})
-        * on() group_left()
-        (avg(node_ram_hourly_cost) / (1024 * 1024 * 1024) * 1)
+    (
+      sum(
+        (
+          sum(container_memory_allocation_bytes{{namespace="{namespace}"}})
+          * on() group_left()
+            (avg(node_ram_hourly_cost) / (1024 * 1024 * 1024) * 1)
+        )
+        +
+        (
+          sum(container_cpu_allocation{{namespace="{namespace}"}})
+          * on() group_left()
+            (avg(node_cpu_hourly_cost) * 1)
+        )
       )
-      +
-      (
-        sum(container_cpu_allocation{{namespace="{namespace}"}})
-        * on() group_left()
-        (avg(node_cpu_hourly_cost) * 1)
-      )
+    )
+    +
+    (
+      sum(
+        sum(
+            kube_persistentvolume_capacity_bytes{{job="opencost"}} / (1024 * 1024 * 1024)
+        ) by (persistentvolume)
+        *
+        sum(pv_hourly_cost{{job=~"opencost"}}) by (persistentvolume)
+        * on(persistentvolume) group_left(namespace) (
+          label_replace(
+            kube_persistentvolumeclaim_info{{job="opencost",namespace="{namespace}"}},
+            "persistentvolume", "$1",
+            "volumename", "(.*)"
+          )
+        )
+      )      
+      OR
+      vector(0)
+    )
+    +
+    (
+        sum(kubecost_load_balancer_cost{{namespace="{namespace}"}}) OR vector(0)
     )
     """
     
@@ -314,12 +391,14 @@ def detect_cost_anomalies(namespace: str) -> CostAnomaly:
     current_cost = extract_metric_value(current_cost_data, default=0)
     
     # Process historical data for statistical analysis
+    logger.info(f"calculating hourly cost anomaliesX: {hourly_cost_data}" )
+    logger.info(f"calculating current cost anomaliesX: {current_cost_data}")
     try:
         data_points = []
+
         if 'data' in hourly_cost_data and 'result' in hourly_cost_data['data'] and hourly_cost_data['data']['result']:
             for value in hourly_cost_data['data']['result'][0]['values']:
                 data_points.append(float(value[1]))
-            
             if len(data_points) > 24:  # Ensure we have at least a day of hourly data
                 
                 # Calculate mean and standard deviation
