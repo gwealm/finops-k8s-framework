@@ -19,7 +19,7 @@
   "editable": true,
   "fiscalYearStartMonth": 0,
   "graphTooltip": 0,
-  "id": 4,
+  "id": 1158,
   "links": [
     {
       "tags": [
@@ -157,16 +157,20 @@
           "values": false
         },
         "showPercentChange": false,
-        "textMode": "auto",
+        "textMode": "value_and_name",
         "wideLayout": true
       },
       "pluginVersion": "12.0.0",
       "targets": [
         {
           "editorMode": "code",
-          "expr": "sum(finops_optimization_savings) by (recommendation_type)",
+          "exemplar": false,
+          "expr": "sum(finops_optimization_savings{recommendation_type!=\"add_cpu_limits\",recommendation_type!=\"add_cpu_limits_and_requests\",recommendation_type!=\"add_memory_limits\",recommendation_type!=\"add_memory_limits_and_requests\"}) by (recommendation_type)",
+          "format": "time_series",
+          "instant": true,
+          "interval": "",
           "legendFormat": "__auto",
-          "range": true,
+          "range": false,
           "refId": "A"
         }
       ],
@@ -195,29 +199,41 @@
             "mode": "absolute",
             "steps": [
               {
-                "color": "green"
-              },
-              {
-                "color": "red",
-                "value": 30
+                "color": "red"
               },
               {
                 "color": "orange",
-                "value": 50
+                "value": 30
               },
               {
                 "color": "yellow",
-                "value": 70
+                "value": 60
               },
               {
                 "color": "green",
-                "value": 100
+                "value": 90
               }
             ]
           },
           "unit": "percent"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 7,
@@ -236,7 +252,7 @@
           ],
           "show": false
         },
-        "frameIndex": 0,
+        "frameIndex": 12,
         "showHeader": true,
         "sortBy": [
           {
@@ -283,26 +299,38 @@
                 "color": "green"
               },
               {
-                "color": "red",
+                "color": "yellow",
                 "value": 30
               },
               {
                 "color": "orange",
-                "value": 50
+                "value": 60
               },
               {
-                "color": "yellow",
-                "value": 70
-              },
-              {
-                "color": "green",
-                "value": 100
+                "color": "red",
+                "value": 90
               }
             ]
           },
           "unit": "percent"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Time"
+            },
+            "properties": [
+              {
+                "id": "color",
+                "value": {
+                  "fixedColor": "blue",
+                  "mode": "fixed"
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 7,
@@ -321,7 +349,7 @@
           ],
           "show": false
         },
-        "frameIndex": 4,
+        "frameIndex": 74,
         "showHeader": true,
         "sortBy": [
           {
@@ -382,12 +410,12 @@
         "overrides": []
       },
       "gridPos": {
-        "h": 3,
+        "h": 6,
         "w": 4,
         "x": 0,
         "y": 15
       },
-      "id": 2,
+      "id": 4,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -412,11 +440,13 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) \n+\nsum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) \n",
+          "editorMode": "code",
+          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) * 240.167\n+\nsum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) * 240.167\n+\nsum(kubecost_load_balancer_cost) * 240.167",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Hourly Cost",
+      "title": "Monthly Cost",
       "type": "stat"
     },
     {
@@ -446,7 +476,7 @@
       },
       "gridPos": {
         "h": 3,
-        "w": 4,
+        "w": 5,
         "x": 4,
         "y": 15
       },
@@ -475,7 +505,9 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) * 24\n+\nsum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) * 24\n",
+          "editorMode": "code",
+          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) * 11  \n+\nsum(\nsum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) * 11\n+\nsum(kubecost_load_balancer_cost) * 11\n",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -510,70 +542,7 @@
       "gridPos": {
         "h": 3,
         "w": 4,
-        "x": 8,
-        "y": 15
-      },
-      "id": 4,
-      "options": {
-        "colorMode": "value",
-        "graphMode": "none",
-        "justifyMode": "auto",
-        "orientation": "auto",
-        "percentChangeColorMode": "inverted",
-        "reduceOptions": {
-          "calcs": [
-            "lastNotNull"
-          ],
-          "fields": "",
-          "values": false
-        },
-        "showPercentChange": true,
-        "textMode": "auto",
-        "wideLayout": true
-      },
-      "pluginVersion": "12.0.0",
-      "targets": [
-        {
-          "datasource": {
-            "type": "prometheus",
-            "uid": "$datasource"
-          },
-          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) * 730\n+\nsum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (10730 * 10730 * 10730)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) * 730\n",
-          "refId": "A"
-        }
-      ],
-      "title": "Monthly Cost",
-      "type": "stat"
-    },
-    {
-      "datasource": {
-        "type": "datasource",
-        "uid": "-- Mixed --"
-      },
-      "fieldConfig": {
-        "defaults": {
-          "decimals": 2,
-          "mappings": [],
-          "thresholds": {
-            "mode": "absolute",
-            "steps": [
-              {
-                "color": "red"
-              },
-              {
-                "color": "green",
-                "value": 0.1
-              }
-            ]
-          },
-          "unit": "currencyUSD"
-        },
-        "overrides": []
-      },
-      "gridPos": {
-        "h": 3,
-        "w": 4,
-        "x": 12,
+        "x": 9,
         "y": 15
       },
       "id": 5,
@@ -601,7 +570,9 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"cpu\",\n      unit=\"core\"\n    }\n  ) by (node)\n  * on(node) group_left()\n    sum(\n      node_cpu_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 730\n)\n",
+          "editorMode": "code",
+          "expr": "sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"cpu\",\n      unit=\"core\"\n    }\n  ) by (node)\n  * on(node) group_left()\n    sum(\n      node_cpu_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 240.167\n)\n",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -636,10 +607,10 @@
       "gridPos": {
         "h": 3,
         "w": 4,
-        "x": 16,
+        "x": 13,
         "y": 15
       },
-      "id": 6,
+      "id": 7,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -664,11 +635,78 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"memory\",\n      unit=\"byte\"\n    }\n  ) by (node)\n  / (1024 * 1024 * 1024)\n  * on(node) group_left()\n    sum(\n      node_ram_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 730\n)\n",
+          "editorMode": "code",
+          "expr": "sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n    sum(\n      pv_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (persistentvolume)\n) * 240.167\n",
+          "range": true,
           "refId": "A"
         }
       ],
-      "title": "Monthly Ram Cost",
+      "title": "Monthly PV Cost",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              },
+              {
+                "color": "green",
+                "value": 0.1
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 5,
+        "x": 4,
+        "y": 18
+      },
+      "id": 2,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": true,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) \n+\nsum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) \n+\nsum(kubecost_load_balancer_cost)\n",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "Hourly Cost",
       "type": "stat"
     },
     {
@@ -699,10 +737,10 @@
       "gridPos": {
         "h": 3,
         "w": 4,
-        "x": 20,
-        "y": 15
+        "x": 9,
+        "y": 18
       },
-      "id": 7,
+      "id": 6,
       "options": {
         "colorMode": "value",
         "graphMode": "none",
@@ -728,12 +766,80 @@
             "uid": "$datasource"
           },
           "editorMode": "code",
-          "expr": "sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n    sum(\n      pv_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (persistentvolume)\n) * 730\n",
+          "expr": "sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"memory\",\n      unit=\"byte\"\n    }\n  ) by (node)\n  / (1024 * 1024 * 1024)\n  * on(node) group_left()\n    sum(\n      node_ram_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 240.167\n)\n",
           "range": true,
           "refId": "A"
         }
       ],
-      "title": "Monthly PV Cost",
+      "title": "Monthly Ram Cost",
+      "type": "stat"
+    },
+    {
+      "datasource": {
+        "type": "prometheus",
+        "uid": "prometheus"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "decimals": 2,
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "red"
+              },
+              {
+                "color": "green",
+                "value": 0.1
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 3,
+        "w": 4,
+        "x": 13,
+        "y": 18
+      },
+      "id": 27,
+      "options": {
+        "colorMode": "value",
+        "graphMode": "none",
+        "justifyMode": "auto",
+        "orientation": "auto",
+        "percentChangeColorMode": "inverted",
+        "reduceOptions": {
+          "calcs": [
+            "lastNotNull"
+          ],
+          "fields": "",
+          "values": false
+        },
+        "showPercentChange": true,
+        "textMode": "auto",
+        "wideLayout": true
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "prometheus"
+          },
+          "editorMode": "code",
+          "expr": "sum(kubecost_load_balancer_cost) * 240.167",
+          "hide": false,
+          "instant": false,
+          "legendFormat": "__auto",
+          "range": true,
+          "refId": "A"
+        }
+      ],
+      "title": "LoadBalacer Cost",
       "type": "stat"
     },
     {
@@ -800,7 +906,7 @@
         "h": 5,
         "w": 8,
         "x": 0,
-        "y": 18
+        "y": 21
       },
       "id": 8,
       "options": {
@@ -823,9 +929,11 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) \n+\nsum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) \n",
+          "editorMode": "code",
+          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) \n+\nsum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) \n+\nsum(kubecost_load_balancer_cost)",
           "interval": "1m",
           "legendFormat": "Hourly Cost",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -896,7 +1004,7 @@
         "h": 5,
         "w": 8,
         "x": 8,
-        "y": 18
+        "y": 21
       },
       "id": 9,
       "options": {
@@ -919,9 +1027,11 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) * 24\n+\nsum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) * 24\n",
+          "editorMode": "code",
+          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) * 11\n+\nsum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) * 11\n+\nsum(kubecost_load_balancer_cost) * 11",
           "interval": "1m",
           "legendFormat": "Daily Cost",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -992,7 +1102,7 @@
         "h": 5,
         "w": 8,
         "x": 16,
-        "y": 18
+        "y": 21
       },
       "id": 10,
       "options": {
@@ -1015,9 +1125,11 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) * 730\n+\nsum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (10730 * 10730 * 10730)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) * 730\n",
+          "editorMode": "code",
+          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) * 240.167\n+\nsum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n  sum(\n    pv_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (persistentvolume)\n) * 240.167\n+\nsum(kubecost_load_balancer_cost) * 240.167",
           "interval": "1m",
           "legendFormat": "Monthly Cost",
+          "range": true,
           "refId": "A"
         }
       ],
@@ -1044,13 +1156,40 @@
           "mappings": [],
           "unit": "currencyUSD"
         },
-        "overrides": []
+        "overrides": [
+          {
+            "__systemRef": "hideSeriesFrom",
+            "matcher": {
+              "id": "byNames",
+              "options": {
+                "mode": "exclude",
+                "names": [
+                  "CPU",
+                  "RAM",
+                  "PV"
+                ],
+                "prefix": "All except:",
+                "readOnly": true
+              }
+            },
+            "properties": [
+              {
+                "id": "custom.hideFrom",
+                "value": {
+                  "legend": false,
+                  "tooltip": false,
+                  "viz": false
+                }
+              }
+            ]
+          }
+        ]
       },
       "gridPos": {
         "h": 5,
         "w": 8,
         "x": 0,
-        "y": 23
+        "y": 26
       },
       "id": 11,
       "options": {
@@ -1059,6 +1198,7 @@
           "displayMode": "table",
           "placement": "right",
           "showLegend": true,
+          "sortBy": "Percent",
           "sortDesc": true,
           "values": [
             "value",
@@ -1086,7 +1226,8 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"cpu\",\n      unit=\"core\"\n    }\n  ) by (node)\n  * on(node) group_left()\n    sum(\n      node_cpu_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 730\n)\n",
+          "editorMode": "code",
+          "expr": "sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"cpu\",\n      unit=\"core\"\n    }\n  ) by (node)\n  * on(node) group_left()\n    sum(\n      node_cpu_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 240.167\n)\n",
           "instant": true,
           "legendFormat": "CPU",
           "refId": "A"
@@ -1096,7 +1237,8 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"memory\",\n      unit=\"byte\"\n    }\n  ) by (node)\n  / (1024 * 1024 * 1024)\n  * on(node) group_left()\n    sum(\n      node_ram_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 730\n)\n",
+          "editorMode": "code",
+          "expr": "sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"memory\",\n      unit=\"byte\"\n    }\n  ) by (node)\n  / (1024 * 1024 * 1024)\n  * on(node) group_left()\n    sum(\n      node_ram_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 240.167\n)\n",
           "instant": true,
           "legendFormat": "RAM",
           "refId": "B"
@@ -1106,10 +1248,25 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n    sum(\n      pv_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (persistentvolume)\n) * 730\n",
+          "editorMode": "code",
+          "expr": "sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n    sum(\n      pv_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (persistentvolume)\n) * 240.167\n",
           "instant": true,
           "legendFormat": "PV",
           "refId": "C"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "${datasource}"
+          },
+          "editorMode": "builder",
+          "exemplar": false,
+          "expr": "sum(kubecost_load_balancer_cost)*240.167",
+          "hide": false,
+          "instant": true,
+          "legendFormat": "Load Balancer",
+          "range": false,
+          "refId": "D"
         }
       ],
       "title": "Cost by Resource",
@@ -1141,7 +1298,7 @@
         "h": 5,
         "w": 8,
         "x": 8,
-        "y": 23
+        "y": 26
       },
       "id": 12,
       "options": {
@@ -1177,7 +1334,8 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "topk(10,\n  sum(\n    sum(\n      container_memory_allocation_bytes{job=~\"$job\"}\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_ram_hourly_cost{job=~\"$job\"} / (1024 * 1024 * 1024) * 730)\n    +\n    sum(\n      container_cpu_allocation{job=~\"$job\"}\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_cpu_hourly_cost{job=~\"$job\"} * 730)\n  ) by (namespace)\n)\n",
+          "editorMode": "code",
+          "expr": "topk(10,\n  sum(\n    sum(\n      container_memory_allocation_bytes{job=~\"$job\"}\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_ram_hourly_cost{job=~\"$job\"} / (1024 * 1024 * 1024) * 240.167)\n    +\n    sum(\n      container_cpu_allocation{job=~\"$job\"}\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_cpu_hourly_cost{job=~\"$job\"} * 240.167)\n  ) by (namespace)\n)\n",
           "instant": true,
           "legendFormat": "{{ namespace }}",
           "refId": "A"
@@ -1212,7 +1370,7 @@
         "h": 5,
         "w": 8,
         "x": 16,
-        "y": 23
+        "y": 26
       },
       "id": 13,
       "options": {
@@ -1248,7 +1406,8 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "topk(10,\n  sum(\n    node_total_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (instance_type) * 730\n)\n",
+          "editorMode": "code",
+          "expr": "topk(10,\n  sum(\n    node_total_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (instance_type) * 240.167\n)\n",
           "instant": true,
           "legendFormat": "{{ instance_type }}",
           "refId": "A"
@@ -1321,7 +1480,7 @@
         "h": 5,
         "w": 12,
         "x": 0,
-        "y": 28
+        "y": 31
       },
       "id": 14,
       "options": {
@@ -1427,7 +1586,7 @@
         "h": 5,
         "w": 12,
         "x": 12,
-        "y": 28
+        "y": 31
       },
       "id": 15,
       "options": {
@@ -1450,9 +1609,11 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "1 -\n(\n  avg_over_time(\n    sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"cpu\",\n      unit=\"core\"\n    }\n  ) by (node)\n  * on(node) group_left()\n    sum(\n      node_cpu_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 730\n)\n [30d:1h]\n  )\n  /\n  avg_over_time(\n    sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"cpu\",\n      unit=\"core\"\n    }\n  ) by (node)\n  * on(node) group_left()\n    sum(\n      node_cpu_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 730\n)\n [1d:1h]\n  )\n)\n",
+          "editorMode": "code",
+          "expr": "1 -\n(\n  avg_over_time(\n    sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"cpu\",\n      unit=\"core\"\n    }\n  ) by (node)\n  * on(node) group_left()\n    sum(\n      node_cpu_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 240.167\n)\n [30d:1h]\n  )\n  /\n  avg_over_time(\n    sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"cpu\",\n      unit=\"core\"\n    }\n  ) by (node)\n  * on(node) group_left()\n    sum(\n      node_cpu_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 240.167\n)\n [1d:1h]\n  )\n)\n",
           "interval": "10m",
           "legendFormat": "Current CPU hourly cost vs. 30-day average",
+          "range": true,
           "refId": "A"
         },
         {
@@ -1460,9 +1621,11 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "1 -\n(\n  avg_over_time(\n    sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"memory\",\n      unit=\"byte\"\n    }\n  ) by (node)\n  / (1024 * 1024 * 1024)\n  * on(node) group_left()\n    sum(\n      node_ram_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 730\n)\n [30d:1h]\n  )\n  /\n  avg_over_time(\n    sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"memory\",\n      unit=\"byte\"\n    }\n  ) by (node)\n  / (1024 * 1024 * 1024)\n  * on(node) group_left()\n    sum(\n      node_ram_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 730\n)\n [1d:1h]\n  )\n)\n",
+          "editorMode": "code",
+          "expr": "1 -\n(\n  avg_over_time(\n    sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"memory\",\n      unit=\"byte\"\n    }\n  ) by (node)\n  / (1024 * 1024 * 1024)\n  * on(node) group_left()\n    sum(\n      node_ram_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 240.167\n)\n [30d:1h]\n  )\n  /\n  avg_over_time(\n    sum(\n  sum(\n    kube_node_status_capacity{\n      job=~\"$job\",\n      resource=\"memory\",\n      unit=\"byte\"\n    }\n  ) by (node)\n  / (1024 * 1024 * 1024)\n  * on(node) group_left()\n    sum(\n      node_ram_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (node)\n  * 240.167\n)\n [1d:1h]\n  )\n)\n",
           "interval": "10m",
           "legendFormat": "Current RAM hourly cost vs. 30-day average",
+          "range": true,
           "refId": "B"
         },
         {
@@ -1470,9 +1633,11 @@
             "type": "prometheus",
             "uid": "$datasource"
           },
-          "expr": "1 -\n(\n  avg_over_time(\n    (sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n    sum(\n      pv_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (persistentvolume)\n) * 730\n) [30d:1h]\n  )\n  /\n  avg_over_time(\n    (sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n    sum(\n      pv_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (persistentvolume)\n) * 730\n) [1d:1h]\n  )\n)\n",
+          "editorMode": "code",
+          "expr": "1 -\n(\n  avg_over_time(\n    (sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n    sum(\n      pv_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (persistentvolume)\n) * 240.167\n) [30d:1h]\n  )\n  /\n  avg_over_time(\n    (sum(\n  sum(\n    kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    } / (1024 * 1024 * 1024)\n  ) by (persistentvolume)\n  * on(persistentvolume) group_left()\n    sum(\n      pv_hourly_cost{\n        job=~\"$job\"\n      }\n    ) by (persistentvolume)\n) * 240.167\n) [1d:1h]\n  )\n)\n",
           "interval": "10m",
           "legendFormat": "Current PV hourly cost vs. 30-day average",
+          "range": true,
           "refId": "C"
         }
       ],
@@ -1480,418 +1645,439 @@
       "type": "timeseries"
     },
     {
-      "collapsed": true,
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 33
+        "y": 36
       },
       "id": 16,
-      "panels": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Mixed --"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "align": "auto",
-                "cellOptions": {
-                  "type": "auto"
-                },
-                "inspect": false
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "currencyUSD"
-            },
-            "overrides": []
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 16,
-            "x": 0,
-            "y": 32
-          },
-          "id": 17,
-          "options": {
-            "cellHeight": "sm",
-            "footer": {
-              "countRows": false,
-              "enablePagination": true,
-              "fields": "",
-              "reducer": [
-                "sum"
-              ],
-              "show": false
-            },
-            "showHeader": true,
-            "sortBy": [
-              {
-                "desc": true,
-                "displayName": "Total Cost"
-              }
-            ]
-          },
-          "pluginVersion": "12.0.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "expr": "sum(\n  kube_node_status_capacity{\n    job=~\"$job\",\n    resource=\"cpu\",\n    unit=\"core\"\n  }\n) by (node)\n* on(node) group_left(instance_type, arch)\n  sum(\n    node_cpu_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (node, instance_type, arch)\n* 730\n",
-              "format": "table",
-              "instant": true,
-              "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "expr": "sum(\n  kube_node_status_capacity{\n    job=~\"$job\",\n    resource=\"memory\",\n    unit=\"byte\"\n  }\n) by (node)\n/ (1024 * 1024 * 1024)\n* on(node) group_left(instance_type, arch)\n  sum(\n    node_ram_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (node, instance_type, arch)\n* 730\n",
-              "format": "table",
-              "instant": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) by (node, instance_type, arch)\n* 730\n",
-              "format": "table",
-              "instant": true,
-              "refId": "C"
-            }
-          ],
-          "title": "Nodes Monthly Cost",
-          "transformations": [
-            {
-              "id": "merge"
-            },
-            {
-              "id": "organize",
-              "options": {
-                "excludeByName": {
-                  "Time": true,
-                  "job": true
-                },
-                "indexByName": {
-                  "Value #A": 3,
-                  "Value #B": 4,
-                  "Value #C": 5,
-                  "arch": 2,
-                  "instance_type": 1,
-                  "node": 0
-                },
-                "renameByName": {
-                  "Value #A": "CPU Cost",
-                  "Value #B": "RAM Cost",
-                  "Value #C": "Total Cost",
-                  "arch": "Architecture",
-                  "instance_type": "Instance Type",
-                  "node": "Node"
-                }
-              }
-            }
-          ],
-          "type": "table"
-        },
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Mixed --"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "align": "auto",
-                "cellOptions": {
-                  "type": "auto"
-                },
-                "inspect": false
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "red",
-                    "value": 80
-                  }
-                ]
-              },
-              "unit": "decgbytes"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Total Cost"
-                },
-                "properties": [
-                  {
-                    "id": "unit",
-                    "value": "currencyUSD"
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 10,
-            "w": 8,
-            "x": 16,
-            "y": 32
-          },
-          "id": 18,
-          "options": {
-            "cellHeight": "sm",
-            "footer": {
-              "countRows": false,
-              "enablePagination": true,
-              "fields": "",
-              "reducer": [
-                "sum"
-              ],
-              "show": false
-            },
-            "showHeader": true,
-            "sortBy": [
-              {
-                "desc": true,
-                "displayName": "Total Cost"
-              }
-            ]
-          },
-          "pluginVersion": "12.0.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "expr": "sum(\n  kube_persistentvolume_capacity_bytes{\n    job=~\"$job\"\n  }\n  / 1024 / 1024 / 1024\n) by (persistentvolume)\n",
-              "format": "table",
-              "instant": true,
-              "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "expr": "sum(\n  kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    }\n  / 1024 / 1024 / 1024\n) by (persistentvolume)\n*\nsum(\n  pv_hourly_cost{\n    job=~\"$job\"\n  }\n  * 730\n) by (persistentvolume)\n",
-              "format": "table",
-              "instant": true,
-              "refId": "B"
-            }
-          ],
-          "title": "Persistent Volumes Monthly Cost",
-          "transformations": [
-            {
-              "id": "merge"
-            },
-            {
-              "id": "organize",
-              "options": {
-                "excludeByName": {
-                  "Time": true,
-                  "job": true
-                },
-                "indexByName": {
-                  "Value #A": 1,
-                  "Value #B": 2,
-                  "persistentvolume": 0
-                },
-                "renameByName": {
-                  "Value #A": "Total GiB",
-                  "Value #B": "Total Cost",
-                  "persistentvolume": "Persistent Volume"
-                }
-              }
-            }
-          ],
-          "type": "table"
-        }
-      ],
+      "panels": [],
       "title": "Cloud Resources",
       "type": "row"
     },
     {
-      "collapsed": true,
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": []
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 16,
+        "x": 0,
+        "y": 37
+      },
+      "id": 17,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": true,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Total Cost"
+          }
+        ]
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "sum(\n  kube_node_status_capacity{\n    job=~\"$job\",\n    resource=\"cpu\",\n    unit=\"core\"\n  }\n) by (node)\n* on(node) group_left(instance_type, arch)\n  sum(\n    node_cpu_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (node, instance_type, arch)\n* 240.167\n",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "sum(\n  kube_node_status_capacity{\n    job=~\"$job\",\n    resource=\"memory\",\n    unit=\"byte\"\n  }\n) by (node)\n/ (1024 * 1024 * 1024)\n* on(node) group_left(instance_type, arch)\n  sum(\n    node_ram_hourly_cost{\n      job=~\"$job\"\n    }\n  ) by (node, instance_type, arch)\n* 240.167\n",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "sum(\n  node_total_hourly_cost{\n    job=~\"$job\"\n  }\n) by (node, instance_type, arch)\n* 240.167\n",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Nodes Monthly Cost",
+      "transformations": [
+        {
+          "id": "merge"
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "job": true
+            },
+            "indexByName": {
+              "Value #A": 3,
+              "Value #B": 4,
+              "Value #C": 5,
+              "arch": 2,
+              "instance_type": 1,
+              "node": 0
+            },
+            "renameByName": {
+              "Value #A": "CPU Cost",
+              "Value #B": "RAM Cost",
+              "Value #C": "Total Cost",
+              "arch": "Architecture",
+              "instance_type": "Instance Type",
+              "node": "Node"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "red",
+                "value": 80
+              }
+            ]
+          },
+          "unit": "decgbytes"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total Cost"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 10,
+        "w": 8,
+        "x": 16,
+        "y": 37
+      },
+      "id": 18,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": true,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Total Cost"
+          }
+        ]
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "expr": "sum(\n  kube_persistentvolume_capacity_bytes{\n    job=~\"$job\"\n  }\n  / 1024 / 1024 / 1024\n) by (persistentvolume)\n",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "sum(\n  kube_persistentvolume_capacity_bytes{\n      job=~\"$job\"\n    }\n  / 1024 / 1024 / 1024\n) by (persistentvolume)\n*\nsum(\n  pv_hourly_cost{\n    job=~\"$job\"\n  }\n  * 240.167\n) by (persistentvolume)\n",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        }
+      ],
+      "title": "Persistent Volumes Monthly Cost",
+      "transformations": [
+        {
+          "id": "merge"
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "job": true
+            },
+            "indexByName": {
+              "Value #A": 1,
+              "Value #B": 2,
+              "persistentvolume": 0
+            },
+            "renameByName": {
+              "Value #A": "Total GiB",
+              "Value #B": "Total Cost",
+              "persistentvolume": "Persistent Volume"
+            }
+          }
+        }
+      ],
+      "type": "table"
+    },
+    {
+      "collapsed": false,
       "gridPos": {
         "h": 1,
         "w": 24,
         "x": 0,
-        "y": 34
+        "y": 47
       },
       "id": 19,
-      "panels": [
-        {
-          "datasource": {
-            "type": "datasource",
-            "uid": "-- Mixed --"
-          },
-          "fieldConfig": {
-            "defaults": {
-              "custom": {
-                "align": "auto",
-                "cellOptions": {
-                  "type": "auto"
-                },
-                "inspect": false
-              },
-              "mappings": [],
-              "thresholds": {
-                "mode": "absolute",
-                "steps": [
-                  {
-                    "color": "green"
-                  },
-                  {
-                    "color": "yellow",
-                    "value": 5
-                  },
-                  {
-                    "color": "red",
-                    "value": 10
-                  }
-                ]
-              },
-              "unit": "currencyUSD"
-            },
-            "overrides": [
-              {
-                "matcher": {
-                  "id": "byName",
-                  "options": "Namespace"
-                },
-                "properties": [
-                  {
-                    "id": "links",
-                    "value": [
-                      {
-                        "targetBlank": true,
-                        "title": "Go To Namespace",
-                        "type": "dashboard",
-                        "url": "/d/opencost-mixin-namespace-jkwq/opencost-namespace?var-job=$job&var-namespace=${__data.fields.Namespace}"
-                      }
-                    ]
-                  }
-                ]
-              }
-            ]
-          },
-          "gridPos": {
-            "h": 12,
-            "w": 24,
-            "x": 0,
-            "y": 33
-          },
-          "id": 20,
-          "options": {
-            "cellHeight": "sm",
-            "footer": {
-              "countRows": false,
-              "enablePagination": true,
-              "fields": "",
-              "reducer": [
-                "sum"
-              ],
-              "show": false
-            },
-            "showHeader": true,
-            "sortBy": [
-              {
-                "desc": true,
-                "displayName": "Total Cost (Today)"
-              }
-            ]
-          },
-          "pluginVersion": "12.0.0",
-          "targets": [
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "expr": "topk(10,\n  sum(\n    sum(\n      container_memory_allocation_bytes{job=~\"$job\"}\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_ram_hourly_cost{job=~\"$job\"} / (1024 * 1024 * 1024) * 730)\n    +\n    sum(\n      container_cpu_allocation{job=~\"$job\"}\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_cpu_hourly_cost{job=~\"$job\"} * 730)\n  ) by (namespace)\n)\n",
-              "format": "table",
-              "instant": true,
-              "refId": "A"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "expr": "topk(10,\n  sum(\n    sum(\n      container_memory_allocation_bytes{job=~\"$job\"}\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_ram_hourly_cost{job=~\"$job\"} / (1024 * 1024 * 1024) * 730)\n    +\n    sum(\n      container_cpu_allocation{job=~\"$job\"}\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_cpu_hourly_cost{job=~\"$job\"} * 730)\n  ) by (namespace)\n)\n\n/\ntopk(10,\n  sum(\n    sum(\n      container_memory_allocation_bytes{job=~\"$job\"} offset 7d\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_ram_hourly_cost{job=~\"$job\"} offset 7d / (1024 * 1024 * 1024) * 730)\n    +\n    sum(\n      container_cpu_allocation{job=~\"$job\"} offset 7d\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_cpu_hourly_cost{job=~\"$job\"} offset 7d * 730)\n  ) by (namespace)\n)\n\n* 100\n- 100\n",
-              "format": "table",
-              "instant": true,
-              "refId": "B"
-            },
-            {
-              "datasource": {
-                "type": "prometheus",
-                "uid": "$datasource"
-              },
-              "expr": "topk(10,\n  sum(\n    sum(\n      container_memory_allocation_bytes{job=~\"$job\"}\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_ram_hourly_cost{job=~\"$job\"} / (1024 * 1024 * 1024) * 730)\n    +\n    sum(\n      container_cpu_allocation{job=~\"$job\"}\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_cpu_hourly_cost{job=~\"$job\"} * 730)\n  ) by (namespace)\n)\n\n/\ntopk(10,\n  sum(\n    sum(\n      container_memory_allocation_bytes{job=~\"$job\"} offset 30d\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_ram_hourly_cost{job=~\"$job\"} offset 30d / (1024 * 1024 * 1024) * 730)\n    +\n    sum(\n      container_cpu_allocation{job=~\"$job\"} offset 30d\n    ) by (namespace, instance)\n    * on(instance) group_left()\n      (node_cpu_hourly_cost{job=~\"$job\"} offset 30d * 730)\n  ) by (namespace)\n)\n\n* 100\n- 100\n",
-              "format": "table",
-              "instant": true,
-              "refId": "C"
-            }
-          ],
-          "title": "Namespace Monthly Cost",
-          "transformations": [
-            {
-              "id": "merge"
-            },
-            {
-              "id": "organize",
-              "options": {
-                "excludeByName": {
-                  "Time": true,
-                  "job": true
-                },
-                "indexByName": {
-                  "Value #A": 1,
-                  "Value #B": 2,
-                  "Value #C": 3,
-                  "namespace": 0
-                },
-                "renameByName": {
-                  "Value #A": "Total Cost (Today)",
-                  "Value #B": "Cost Difference (7d)",
-                  "Value #C": "Cost Difference (30d)",
-                  "namespace": "Namespace"
-                }
-              }
-            }
-          ],
-          "type": "table"
-        }
-      ],
+      "panels": [],
       "title": "Namespace Summary",
       "type": "row"
+    },
+    {
+      "datasource": {
+        "type": "datasource",
+        "uid": "-- Mixed --"
+      },
+      "fieldConfig": {
+        "defaults": {
+          "custom": {
+            "align": "auto",
+            "cellOptions": {
+              "type": "auto"
+            },
+            "inspect": false
+          },
+          "mappings": [],
+          "thresholds": {
+            "mode": "absolute",
+            "steps": [
+              {
+                "color": "green"
+              },
+              {
+                "color": "yellow",
+                "value": 5
+              },
+              {
+                "color": "red",
+                "value": 10
+              }
+            ]
+          },
+          "unit": "currencyUSD"
+        },
+        "overrides": [
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Total Cost (Today)"
+            },
+            "properties": [
+              {
+                "id": "links",
+                "value": [
+                  {
+                    "targetBlank": true,
+                    "title": "Go To Namespace",
+                    "type": "dashboard",
+                    "url": "/d/opencost-mixin-namespace-jkwq/opencost-namespace?var-job=$job&var-namespace=${__data.fields.Namespace}"
+                  }
+                ]
+              },
+              {
+                "id": "unit",
+                "value": "currencyUSD"
+              }
+            ]
+          },
+          {
+            "matcher": {
+              "id": "byName",
+              "options": "Cost Difference (7d)"
+            },
+            "properties": [
+              {
+                "id": "unit",
+                "value": "percent"
+              }
+            ]
+          }
+        ]
+      },
+      "gridPos": {
+        "h": 12,
+        "w": 24,
+        "x": 0,
+        "y": 48
+      },
+      "id": 20,
+      "options": {
+        "cellHeight": "sm",
+        "footer": {
+          "countRows": false,
+          "enablePagination": true,
+          "fields": "",
+          "reducer": [
+            "sum"
+          ],
+          "show": false
+        },
+        "showHeader": true,
+        "sortBy": [
+          {
+            "desc": true,
+            "displayName": "Total Cost (Today)"
+          }
+        ]
+      },
+      "pluginVersion": "12.0.0",
+      "targets": [
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "topk(10,\n  (\n    ## CPU + Memória\n    sum(\n      sum(container_memory_allocation_bytes{job=\"opencost\"}) by (namespace, instance)\n      * on(instance) group_left()\n        (node_ram_hourly_cost{job=\"opencost\"} / (1024 * 1024 * 1024) * 240.167)\n    ) by (namespace)\n    +\n    sum(\n      sum(container_cpu_allocation{job=\"opencost\"}) by (namespace, instance)\n      * on(instance) group_left()\n        (node_cpu_hourly_cost{job=\"opencost\"} * 240.167)\n    ) by (namespace)\n\n    ## Load Balancer\n    +\n    (\n      sum(kubecost_load_balancer_cost{job=\"opencost\"} * 240.167) by (namespace)\n      or\n      (\n        0 * label_replace(\n          sum(container_cpu_allocation{job=\"opencost\"}) by (namespace),\n          \"namespace\", \"$1\", \"namespace\", \"(.*)\"\n        )\n      )\n    )\n\n    ## Persistent Volumes\n    +\n    (\n      sum(\n        label_replace(\n          (\n            kube_persistentvolume_capacity_bytes{job=\"opencost\"} / 1024 / 1024 / 1024\n            * on(persistentvolume)\n              group_left()\n              (pv_hourly_cost{job=\"opencost\"} * 240.167)\n          )\n          * on(persistentvolume)\n            group_left(claim_namespace)\n            kube_persistentvolume_claim_ref\n          ,\n          \"namespace\", \"$1\", \"claim_namespace\", \"(.*)\"\n        )\n      ) by (namespace)\n      or\n      (\n        0 * label_replace(\n          sum(container_cpu_allocation{job=\"opencost\"}) by (namespace),\n          \"namespace\", \"$1\", \"namespace\", \"(.*)\"\n        )\n      )\n    )\n  )\n)\n\n",
+          "format": "table",
+          "instant": true,
+          "refId": "A"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "topk(10,\n  (\n    ## CPU + Memória\n    sum(\n      sum(container_memory_allocation_bytes{job=\"opencost\"}) by (namespace, instance)\n      * on(instance) group_left()\n        (node_ram_hourly_cost{job=\"opencost\"} / (1024 * 1024 * 1024) * 240.167)\n    ) by (namespace)\n    +\n    sum(\n      sum(container_cpu_allocation{job=\"opencost\"}) by (namespace, instance)\n      * on(instance) group_left()\n        (node_cpu_hourly_cost{job=\"opencost\"} * 240.167)\n    ) by (namespace)\n\n    ## Load Balancer\n    +\n    (\n      sum(kubecost_load_balancer_cost{job=\"opencost\"} * 240.167) by (namespace)\n      or\n      (\n        0 * label_replace(\n          sum(container_cpu_allocation{job=\"opencost\"}) by (namespace),\n          \"namespace\", \"$1\", \"namespace\", \"(.*)\"\n        )\n      )\n    )\n\n    ## Persistent Volumes\n    +\n    (\n      sum(\n        label_replace(\n          (\n            kube_persistentvolume_capacity_bytes{job=\"opencost\"} / 1024 / 1024 / 1024\n            * on(persistentvolume)\n              group_left()\n              (pv_hourly_cost{job=\"opencost\"} * 240.167)\n          )\n          * on(persistentvolume)\n            group_left(claim_namespace)\n            kube_persistentvolume_claim_ref\n          ,\n          \"namespace\", \"$1\", \"claim_namespace\", \"(.*)\"\n        )\n      ) by (namespace)\n      or\n      (\n        0 * label_replace(\n          sum(container_cpu_allocation{job=\"opencost\"}) by (namespace),\n          \"namespace\", \"$1\", \"namespace\", \"(.*)\"\n        )\n      )\n    )\n  )\n)\n\n/\n  topk(10,\n    (\n      ## CPU + Memória (7 dias atrás)\n      sum(\n        sum(container_memory_allocation_bytes{job=\"opencost\"} offset 7d) by (namespace, instance)\n        * on(instance) group_left()\n          (node_ram_hourly_cost{job=\"opencost\"} offset 7d / (1024 * 1024 * 1024) * 240.167)\n      ) by (namespace)\n      +\n      sum(\n        sum(container_cpu_allocation{job=\"opencost\"} offset 7d) by (namespace, instance)\n        * on(instance) group_left()\n          (node_cpu_hourly_cost{job=\"opencost\"} offset 7d * 240.167)\n      ) by (namespace)\n\n      ## Load Balancer\n      +\n      (\n        sum(kubecost_load_balancer_cost{job=\"opencost\"} offset 7d * 240.167) by (namespace)\n        or\n        (\n          0 * label_replace(\n            sum(container_cpu_allocation{job=\"opencost\"} offset 7d) by (namespace),\n            \"namespace\", \"$1\", \"namespace\", \"(.*)\"\n          )\n        )\n      )\n\n      ## Persistent Volumes\n      +\n      (\n        sum(\n          label_replace(\n            (\n              kube_persistentvolume_capacity_bytes{job=\"opencost\"} offset 7d / 1024 / 1024 / 1024\n              * on(persistentvolume)\n                group_left()\n                (pv_hourly_cost{job=\"opencost\"} offset 7d * 240.167)\n            )\n            * on(persistentvolume)\n              group_left(claim_namespace)\n              kube_persistentvolume_claim_ref offset 7d\n            ,\n            \"namespace\", \"$1\", \"claim_namespace\", \"(.*)\"\n          )\n        ) by (namespace)\n        or\n        (\n          0 * label_replace(\n            sum(container_cpu_allocation{job=\"opencost\"} offset 7d) by (namespace),\n            \"namespace\", \"$1\", \"namespace\", \"(.*)\"\n          )\n        )\n      )\n    )\n  )\n* 100 - 100",
+          "format": "table",
+          "instant": true,
+          "refId": "B"
+        },
+        {
+          "datasource": {
+            "type": "prometheus",
+            "uid": "$datasource"
+          },
+          "editorMode": "code",
+          "expr": "topk(10,\n  (\n    ## CPU + Memória\n    sum(\n      sum(container_memory_allocation_bytes{job=\"opencost\"}) by (namespace, instance)\n      * on(instance) group_left()\n        (node_ram_hourly_cost{job=\"opencost\"} / (1024 * 1024 * 1024) * 240.167)\n    ) by (namespace)\n    +\n    sum(\n      sum(container_cpu_allocation{job=\"opencost\"}) by (namespace, instance)\n      * on(instance) group_left()\n        (node_cpu_hourly_cost{job=\"opencost\"} * 240.167)\n    ) by (namespace)\n\n    ## Load Balancer\n    +\n    (\n      sum(kubecost_load_balancer_cost{job=\"opencost\"} * 240.167) by (namespace)\n      or\n      (\n        0 * label_replace(\n          sum(container_cpu_allocation{job=\"opencost\"}) by (namespace),\n          \"namespace\", \"$1\", \"namespace\", \"(.*)\"\n        )\n      )\n    )\n\n    ## Persistent Volumes\n    +\n    (\n      sum(\n        label_replace(\n          (\n            kube_persistentvolume_capacity_bytes{job=\"opencost\"} / 1024 / 1024 / 1024\n            * on(persistentvolume)\n              group_left()\n              (pv_hourly_cost{job=\"opencost\"} * 240.167)\n          )\n          * on(persistentvolume)\n            group_left(claim_namespace)\n            kube_persistentvolume_claim_ref\n          ,\n          \"namespace\", \"$1\", \"claim_namespace\", \"(.*)\"\n        )\n      ) by (namespace)\n      or\n      (\n        0 * label_replace(\n          sum(container_cpu_allocation{job=\"opencost\"}) by (namespace),\n          \"namespace\", \"$1\", \"namespace\", \"(.*)\"\n        )\n      )\n    )\n  )\n)\n\n/\n  topk(10,\n    (\n      ## CPU + Memória (7 dias atrás)\n      sum(\n        sum(container_memory_allocation_bytes{job=\"opencost\"} offset 30d) by (namespace, instance)\n        * on(instance) group_left()\n          (node_ram_hourly_cost{job=\"opencost\"} offset 30d / (1024 * 1024 * 1024) * 240.167)\n      ) by (namespace)\n      +\n      sum(\n        sum(container_cpu_allocation{job=\"opencost\"} offset 30d) by (namespace, instance)\n        * on(instance) group_left()\n          (node_cpu_hourly_cost{job=\"opencost\"} offset 30d * 240.167)\n      ) by (namespace)\n\n      ## Load Balancer\n      +\n      (\n        sum(kubecost_load_balancer_cost{job=\"opencost\"} offset 30d * 240.167) by (namespace)\n        or\n        (\n          0 * label_replace(\n            sum(container_cpu_allocation{job=\"opencost\"} offset 30d) by (namespace),\n            \"namespace\", \"$1\", \"namespace\", \"(.*)\"\n          )\n        )\n      )\n\n      ## Persistent Volumes\n      +\n      (\n        sum(\n          label_replace(\n            (\n              kube_persistentvolume_capacity_bytes{job=\"opencost\"} offset 30d / 1024 / 1024 / 1024\n              * on(persistentvolume)\n                group_left()\n                (pv_hourly_cost{job=\"opencost\"} offset 30d * 240.167)\n            )\n            * on(persistentvolume)\n              group_left(claim_namespace)\n              kube_persistentvolume_claim_ref offset 30d\n            ,\n            \"namespace\", \"$1\", \"claim_namespace\", \"(.*)\"\n          )\n        ) by (namespace)\n        or\n        (\n          0 * label_replace(\n            sum(container_cpu_allocation{job=\"opencost\"} offset 30d) by (namespace),\n            \"namespace\", \"$1\", \"namespace\", \"(.*)\"\n          )\n        )\n      )\n    )\n  )\n* 100 - 100",
+          "format": "table",
+          "instant": true,
+          "refId": "C"
+        }
+      ],
+      "title": "Namespace Monthly Cost",
+      "transformations": [
+        {
+          "id": "merge"
+        },
+        {
+          "id": "organize",
+          "options": {
+            "excludeByName": {
+              "Time": true,
+              "job": true
+            },
+            "indexByName": {
+              "Value #A": 1,
+              "Value #B": 2,
+              "Value #C": 3,
+              "namespace": 0
+            },
+            "renameByName": {
+              "Value #A": "Total Cost (Today)",
+              "Value #B": "Cost Difference (7d)",
+              "Value #C": "Cost Difference (30d)",
+              "namespace": "Namespace"
+            }
+          }
+        }
+      ],
+      "type": "table"
     }
   ],
   "preload": false,
@@ -1903,19 +2089,29 @@
   "templating": {
     "list": [
       {
+        "current": {
+          "text": "Prometheus",
+          "value": "prometheus"
+        },
         "label": "Data source",
         "name": "datasource",
+        "options": [],
         "query": "prometheus",
         "refresh": 1,
         "type": "datasource"
       },
       {
+        "current": {
+          "text": "opencost",
+          "value": "opencost"
+        },
         "datasource": {
           "type": "prometheus",
           "uid": "${datasource}"
         },
         "label": "Job",
         "name": "job",
+        "options": [],
         "query": "label_values(opencost_build_info, job)",
         "refresh": 2,
         "sort": 1,
@@ -1924,12 +2120,12 @@
     ]
   },
   "time": {
-    "from": "now-7d",
+    "from": "now-30m",
     "to": "now"
   },
   "timepicker": {},
   "timezone": "utc",
   "title": "OpenCost / Overview",
   "uid": "opencost-mixin-kover-jkwq",
-  "version": 1
+  "version": 11
 }
