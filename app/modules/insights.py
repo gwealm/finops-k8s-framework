@@ -391,8 +391,6 @@ def detect_cost_anomalies(namespace: str) -> CostAnomaly:
     current_cost = extract_metric_value(current_cost_data, default=0)
     
     # Process historical data for statistical analysis
-    logger.info(f"calculating hourly cost anomaliesX: {hourly_cost_data}" )
-    logger.info(f"calculating current cost anomaliesX: {current_cost_data}")
     try:
         data_points = []
 
