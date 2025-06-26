@@ -33,14 +33,6 @@ class Recommendation(BaseModel):
     recommended_value: Union[float, str]
 
 
-class CostForecast(BaseModel):
-    """30-day cost forecast"""
-    namespace: str
-    current_monthly_cost: float
-    forecasted_monthly_cost: float
-    trend_percent: float
-
-
 class CostEfficiency(BaseModel):
     """Cost efficiency metrics"""
     namespace: str

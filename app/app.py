@@ -26,13 +26,12 @@ instrumentator.instrument(app).expose(app)
 logger.info("Application instrumented with Prometheus metrics at /metrics")
 
 # Import our modules (AFTER instrumenting the app)
-from modules.models import CostEfficiency, Recommendation, CostAnomaly, CostForecast
+from modules.models import CostEfficiency, Recommendation, CostAnomaly
 from modules.insights import (
     get_namespace_resources, 
     calculate_cost_efficiency,
     generate_recommendations,
     detect_cost_anomalies,
-    generate_cost_forecast
 )
 
 # Now define all your routes and other app functionality
@@ -84,13 +83,6 @@ def get_cost_anomalies():
     resource_data = handle_errors(get_namespace_resources)
     return [handle_errors(detect_cost_anomalies, data.namespace) for data in resource_data]
 
-# Endpoint to get cost forecasts
-@app.get("/cost-forecasts", response_model=List[CostForecast])
-def get_cost_forecasts():
-    """Get 30-day cost forecasts for all namespaces"""
-    resource_data = handle_errors(get_namespace_resources)
-    return [handle_errors(generate_cost_forecast, data.namespace) for data in resource_data]
-
 # Endpoint to get all insights in one call
 @app.get("/all-insights")
 def get_all_insights():
@@ -106,13 +98,11 @@ def get_all_insights():
         recommendations.extend(namespace_recommendations)
     
     anomalies = [handle_errors(detect_cost_anomalies, data.namespace) for data in resource_data]
-    forecasts = [handle_errors(generate_cost_forecast, data.namespace) for data in resource_data]
     
     return {
         "cost_efficiencies": efficiencies,
         "recommendations": recommendations,
         "cost_anomalies": anomalies, 
-        "cost_forecasts": forecasts
     }
 
 # Force update of app metrics
@@ -149,7 +139,6 @@ async def startup():
                 handle_errors(calculate_cost_efficiency, data)
                 handle_errors(generate_recommendations, data)
                 handle_errors(detect_cost_anomalies, data.namespace)
-                handle_errors(generate_cost_forecast, data.namespace)
                 
             logger.info(f"Metrics initialized for {len(resource_data)} namespaces")
     except Exception as e:

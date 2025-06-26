@@ -3,7 +3,7 @@ import logging
 from typing import List
 import numpy as np
 
-from .models import ResourceData, CostEfficiency, Recommendation, CostAnomaly, CostForecast
+from .models import ResourceData, CostEfficiency, Recommendation, CostAnomaly
 from .prometheus import query_prometheus, extract_metric_value
 
 from modules.metrics import *
@@ -443,84 +443,3 @@ def detect_cost_anomalies(namespace: str) -> CostAnomaly:
         anomaly_score=anomaly_score
     )
 
-def generate_cost_forecast(namespace: str) -> CostForecast:
-    """
-    Generate a 30-day cost forecast based on historical data with improved methodology
-    """
-    # Get daily cost data for the past 30 days
-    daily_cost_query = f"""
-    sum(
-      (
-        sum(container_memory_allocation_bytes{{namespace="{namespace}"}})
-        * on() group_left()
-        (avg(node_ram_hourly_cost) / (1024 * 1024 * 1024) * 24)
-      )
-      +
-      (
-        sum(container_cpu_allocation{{namespace="{namespace}"}})
-        * on() group_left()
-        (avg(node_cpu_hourly_cost) * 24)
-      )
-    )[30d:1d]
-    """
-    
-    daily_cost_data = query_prometheus(daily_cost_query)
-    
-    # Get current monthly cost
-    current_cost_query = f"""
-    sum(
-      (
-        sum(container_memory_allocation_bytes{{namespace="{namespace}"}})
-        * on() group_left()
-        (avg(node_ram_hourly_cost) / (1024 * 1024 * 1024) * 730)
-      )
-      +
-      (
-        sum(container_cpu_allocation{{namespace="{namespace}"}})
-        * on() group_left()
-        (avg(node_cpu_hourly_cost) * 730)
-      )
-    )
-    """
-    
-    current_cost_data = query_prometheus(current_cost_query)
-    current_cost = extract_metric_value(current_cost_data, default=0)
-    
-    # Analyze the historical data for trend
-    # This is a simplified linear regression - in production, consider using numpy's polyfit
-    try:
-        data_points = []
-        if 'data' in daily_cost_data and 'result' in daily_cost_data['data'] and daily_cost_data['data']['result']:
-            for value in daily_cost_data['data']['result'][0]['values']:
-                data_points.append(float(value[1]))
-            
-            if len(data_points) > 7:  # Ensure we have at least a week of data
-                x = np.arange(len(data_points))
-                y = np.array(data_points)
-                slope, intercept = np.polyfit(x, y, 1)
-                
-                # Calculate trend as percentage
-                trend_percent = (slope * 30 / current_cost) * 100 if current_cost > 0 else 0
-                
-                # Project forward using linear model
-                forecasted_cost = current_cost * (1 + trend_percent/100)
-            else:
-                trend_percent = 0
-                forecasted_cost = current_cost
-        else:
-            trend_percent = 0
-            forecasted_cost = current_cost
-            
-    except Exception as e:
-        logger.error(f"Error calculating cost forecast: {e}")
-        trend_percent = 0
-        forecasted_cost = current_cost
-        
-    finops_cost_forecast.labels(exported_namespace=namespace).set(forecasted_cost)
-    
-    return CostForecast(
-        namespace=namespace,
-        current_monthly_cost=current_cost,
-        forecasted_monthly_cost=forecasted_cost,
-        trend_percent=trend_percent
-    )

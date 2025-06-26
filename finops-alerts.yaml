@@ -174,7 +174,7 @@ spec:
         summary: "Idle persistent volume {{ $labels.persistentvolume }}"
         description: "Persistent volume {{ $labels.persistentvolume }} has been available (unused) for 7 days."
 
-    - alert: IdleServices
+    - alert: IdleLoadBalancer
       expr: |
         sum(kube_service_spec_type{type="LoadBalancer"}) by (namespace, service) 
         unless sum(kube_pod_info) by (namespace, service)

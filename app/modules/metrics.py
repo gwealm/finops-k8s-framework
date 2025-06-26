@@ -32,12 +32,6 @@ finops_optimization_savings = Gauge(
     ['exported_namespace', 'recommendation_type']
 )
 
-finops_cost_forecast = Gauge(
-    'finops_cost_forecast', 
-    '30-day cost forecast ($)', 
-    ['exported_namespace']
-)
-
 finops_resource_utilization = Gauge(
     'finops_resource_utilization',
     'Ratio of actual usage vs requested resources (ideal ~0.7-0.8)',
