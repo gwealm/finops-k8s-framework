@@ -93,7 +93,7 @@ spec:
         
     - alert: OptimizationSavingsAvailable
       expr: count(finops_optimization_savings{} > 0) by (recommendation_type) > 0
-      for: 14d
+      for: 1h
       labels:
         severity: warning
         category: finops
@@ -103,7 +103,7 @@ spec:
 
   - name: finops-resource-utilization
     rules:
-    - alert: ClusterUnderutilized
+    - alert: ClusterCPUUnderutilization
       expr: sum(rate(container_cpu_usage_seconds_total{container!=""}[1d])) / sum(kube_node_status_capacity{resource="cpu"}) < 0.3
       for: 7d
       labels:
@@ -112,29 +112,6 @@ spec:
       annotations:
         summary: "Cluster underutilized"
         description: "Cluster CPU utilization has been below 30% for 7 days. Consider rightsizing the cluster."
-        
-    - alert: NamespaceOverprovisioned
-      expr: |
-        sum(kube_pod_container_resource_requests{resource="cpu",service="prometheus-kube-state-metrics"}) by (namespace) / 
-        sum(rate(container_cpu_usage_seconds_total{container!=""}[1d])) by (namespace) > 5
-      for: 7d
-      labels:
-        severity: warning
-        category: finops
-      annotations:
-        summary: "Namespace {{ $labels.namespace }} is overprovisioned"
-        description: "CPU requests in namespace {{ $labels.namespace }} are more than 5x actual usage for 7 days. Consider rightsizing."
-        
-
-    - alert: MemoryOverProvisioned
-      expr: sum(kube_pod_container_resource_requests{resource="memory",service="prometheus-kube-state-metrics"}) by (namespace) / sum(container_memory_working_set_bytes{container!=""}) by (namespace) > 3
-      for: 7d
-      labels:
-        severity: warning
-        category: finops
-      annotations:
-        summary: "Memory overprovisioned in namespace {{ $labels.namespace }}"
-        description: "Memory requests in namespace {{ $labels.namespace }} are more than 3x actual usage for 7 days. Consider rightsizing."
 
   - name: finops-cost-increase
     rules:
