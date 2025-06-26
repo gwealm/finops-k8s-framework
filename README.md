@@ -11,7 +11,6 @@ This framework extends OpenCost capabilities with additional FinOps metrics and 
 - **Cost efficiency scoring** across namespaces, pods, and containers
 - **Resource optimization recommendations** to rightsize workloads
 - **Cost anomaly detection** to identify unusual spending patterns
-- **Cost forecasting** to predict future expenses
 - **Custom Prometheus metrics** and Grafana dashboards
 
 ## Components
@@ -27,7 +26,6 @@ This framework extends OpenCost capabilities with additional FinOps metrics and 
 - `finops_resource_waste`: Percentage of wasted resources
 - `finops_anomaly_score`: Cost anomaly detection score
 - `finops_optimization_savings`: Potential monthly cost savings
-- `finops_cost_forecast`: 30-day cost forecast
 
 ## Installation
 
@@ -52,5 +50,4 @@ cd finops-framework
 - `/cost-efficiency`: Get cost efficiency scores
 - `/recommendations`: Get optimization recommendations
 - `/cost-anomalies`: Get anomaly detection results
-- `/cost-forecasts`: Get 30 day cost forecasts
 - `/all-insights`: Get all insights in one call
