@@ -3,3 +3,18 @@ grafana:
     dashboards:
       enabled: true
       label: grafana_dashboard
+  persistence:
+    enabled: true
+    storageClassName: gp3
+    accessModes: ["ReadWriteOnce"]
+    size: 10Gi
+prometheus:
+  prometheusSpec:
+    storageSpec:
+      volumeClaimTemplate:
+        spec:
+          storageClassName: gp3
+          accessModes: ["ReadWriteOnce"]
+          resources:
+            requests:
+              storage: 20Gi

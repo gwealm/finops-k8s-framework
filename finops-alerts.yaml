@@ -113,31 +113,71 @@ spec:
         summary: "Cluster underutilized"
         description: "Cluster CPU utilization has been below 30% for 7 days. Consider rightsizing the cluster."
 
-  - name: finops-cost-increase
+  - name: finops-daily-cost-increase
     rules:
-    - alert: DailyCostIncrease
-      expr: |
-        sum(rate(container_cpu_usage_seconds_total{container!=""}[1d])) by (namespace) > 
-        sum(rate(container_cpu_usage_seconds_total{container!=""}[1d] offset 1d)) by (namespace) * 1.5
-      for: 2h
-      labels:
-        severity: warning
-        category: finops
-      annotations:
-        summary: "Namespace {{ $labels.namespace }} cost increased by >50%"
-        description: "The compute cost for namespace {{ $labels.namespace }} has increased by more than 50% compared to the previous day."
+      - alert: DailyCostIncrease
+        expr: |
+          sum(
+            sum(avg_over_time(container_memory_allocation_bytes{job="opencost"}[24h])) by (namespace, instance)
+            * on(instance) group_left()
+              (node_ram_hourly_cost{job="opencost"} / (1024 * 1024 * 1024))
+          +
+            sum(avg_over_time(container_cpu_allocation{job="opencost"}[24h])) by (namespace, instance)
+            * on(instance) group_left()
+              (node_cpu_hourly_cost{job="opencost"})
+          ) by (namespace)
+          >
+          (
+            sum(
+              sum(avg_over_time(container_memory_allocation_bytes{job="opencost"}[24h] offset 1d)) by (namespace, instance)
+              * on(instance) group_left()
+                (node_ram_hourly_cost{job="opencost"} offset 1d / (1024 * 1024 * 1024))
+            +
+              sum(avg_over_time(container_cpu_allocation{job="opencost"}[24h] offset 1d)) by (namespace, instance)
+              * on(instance) group_left()
+                (node_cpu_hourly_cost{job="opencost"} offset 1d)
+            ) by (namespace)
+          ) * 1.5
+        for: 2h
+        labels:
+          severity: warning
+          category: finops
+        annotations:
+          summary: "Namespace {{ $labels.namespace }} cost increased by >50%"
+          description: "The compute cost for namespace {{ $labels.namespace }} has increased by more than 50% compared to the previous day."
 
-    - alert: WeeklyCostIncrease
-      expr: |
-        sum(rate(container_cpu_usage_seconds_total{container!=""}[7d])) by (namespace) > 
-        sum(rate(container_cpu_usage_seconds_total{container!=""}[7d] offset 7d)) by (namespace) * 1.3
-      for: 1d
-      labels:
-        severity: warning
-        category: finops
-      annotations:
-        summary: "Namespace {{ $labels.namespace }} weekly cost increased by >30%"
-        description: "The compute cost for namespace {{ $labels.namespace }} has increased by more than 30% compared to the previous week."
+  - name: finops-weekly-cost-increase
+    rules:
+      - alert: WeeklyCostIncrease
+        expr: |
+          sum(
+            sum(avg_over_time(container_memory_allocation_bytes{job="opencost"}[7d])) by (namespace, instance)
+            * on(instance) group_left()
+              (node_ram_hourly_cost{job="opencost"} / (1024 * 1024 * 1024))
+          +
+            sum(avg_over_time(container_cpu_allocation{job="opencost"}[7d])) by (namespace, instance)
+            * on(instance) group_left()
+              (node_cpu_hourly_cost{job="opencost"})
+          ) by (namespace)
+          >
+          (
+            sum(
+              sum(avg_over_time(container_memory_allocation_bytes{job="opencost"}[7d] offset 7d)) by (namespace, instance)
+              * on(instance) group_left()
+                (node_ram_hourly_cost{job="opencost"} offset 7d / (1024 * 1024 * 1024))
+            +
+              sum(avg_over_time(container_cpu_allocation{job="opencost"}[7d] offset 7d)) by (namespace, instance)
+              * on(instance) group_left()
+                (node_cpu_hourly_cost{job="opencost"} offset 7d)
+            ) by (namespace)
+          ) * 1.3
+        for: 2h
+        labels:
+          severity: warning
+          category: finops
+        annotations:
+          summary: "Namespace {{ $labels.namespace }} cost increased by >30%"
+          description: "The compute cost for namespace {{ $labels.namespace }} has increased by more than 50% compared to the previous week."
         
   - name: finops-idle-resources
     rules:
